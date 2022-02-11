@@ -25,6 +25,8 @@ private:
 
     float orginWidth;
     float orginHight;
+    float targetWidth;
+    float targetHight;
 };
 
 #endif // BULLET_H

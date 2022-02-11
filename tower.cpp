@@ -6,15 +6,16 @@ Tower::Tower(QGraphicsScene *scene, QObject *parent)  : QObject{parent}
 
     //  rect.setRect(0,0, 50,50); //bounding rect
     rect.setSize(QSizeF(50,50));
-    this->setPos(scene->width()/2 - rect.width()/2 , scene->height()/2 - rect.height()/2);
+    this->setPos(scene->width()/2  - rect.width()/2,
+                 scene->height()/2 - rect.height()/2);
 
     //setting area within which the tower shoots bullets:
     attackArea = new QGraphicsEllipseItem(this);
-    QSizeF attAreaSize(300.f,300.f);
+
+    QSizeF attAreaSize(400.f,400.f);
     attackArea->setRect(QRectF(this->x() - attAreaSize.width()/2 + rect.width()/2,
                                this->y() - attAreaSize.width()/2 + rect.height()/2,
-                               300.f,
-                               300.f));
+                               attAreaSize.width(), attAreaSize.height()));
     scene->addItem(attackArea);
 
 }
