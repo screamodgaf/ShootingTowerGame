@@ -4,7 +4,7 @@
 #include <QTimer>
 
 Level1::Level1( )
- {
+{
     std::cout << "Level1() ctor" << "\n";
     sceneRect = QRectF(0,0,800,600); ///its needed for scene.update(rect) - to update and so items dont leave any artifacts
     this->setSceneRect(sceneRect);
@@ -15,7 +15,7 @@ Level1::Level1( )
     m_view->setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "game"));
     m_view->resize(800, 600);
     m_view->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
- m_view->setViewportUpdateMode(QGraphicsView::NoViewportUpdate );
+    m_view->setViewportUpdateMode(QGraphicsView::NoViewportUpdate );
 
     m_view->setScene(this);
 
@@ -27,7 +27,7 @@ Level1::Level1( )
     tower = new Tower(this);
     //    enemy = new Enemy;
 
-    player = new Player;
+    player = new Player(this);
     player->setFlag(QGraphicsItem::ItemIsFocusable); ///only one item can respond to keyboard events
     player->setFocus();
 
@@ -43,14 +43,21 @@ Level1::Level1( )
     connect(towerAreaTimer, &QTimer::timeout, this,
             &Level1::checkTowersAreaPeriodicly);
     towerAreaTimer->start(700);
+
+
 }
 
 
 void Level1::advance()
 {
     countFPS();
-    std::cout << "Level1::advance()" << "\n";
     for (int i = 0; i < v_bullets.size(); ++i) {
+        if(v_bullets[i]->checkBulletsDistFromTower(&v_bullets)){
+            v_bullets.erase(std::remove(v_bullets.begin(), v_bullets.end(), v_bullets[i]), v_bullets.end());
+            // this had wrong syntax thus the crash: v_bullets.erase((std::remove(v_bullets.begin(), v_bullets.end(), v_bullets[i]), v_bullets.end()));
+            //v_bullets.erase(v_bullets.begin()+i);
+            continue;
+        }
         v_bullets[i]->update();
     }
     player->advance(1);
@@ -58,7 +65,7 @@ void Level1::advance()
 
     update(sceneRect); ///so items dont leave any artifacts though works without it when using m_view->viewport()->repaint();
     m_view->viewport()->repaint();
-//    player.passDelta(duration);countFPS();
+    //    player.passDelta(duration);countFPS();
 }
 
 
@@ -79,6 +86,15 @@ void Level1::countFPS()
 
 }
 
+
+std::vector<Bullet *> *Level1::getBulletContainer()
+{
+    return &v_bullets;
+}
+
+
+
+
 void Level1::checkTowersAreaPeriodicly()
 {
     if(tower->checkCollisionsWithAttackArea(player)){
@@ -87,15 +103,16 @@ void Level1::checkTowersAreaPeriodicly()
 
 }
 
-
 void Level1::createBullet()
 {
-    bullet = new Bullet(tower);
+    Bullet* bullet = new Bullet(this, &v_bullets, tower);
     v_bullets.push_back(bullet);
-    this->addItem(bullet);
+
+
+    this->addItem(bullet); // this gives error/warning: "QGraphicsScene::addItem: item has already been added to this scene" - The usual way this happens is that when you create your QGraphicsItem you specify a parent for the item that is already in the scene. In this case there is no need to explicitly add it to the scene afterwards as the QGraphicsItem constructor does it for you if the parent is already in a scene.
     std::cout << "void Level1::keyPressEvent(QKeyEvent *event)" << "\n";
-    bullet->estimateBulletTrajectory(tower, player, this);
-    bullet->setRotationTowardTarget(tower, player, this);
+    bullet->estimateBulletTrajectory(tower, player);
+    bullet->setRotationTowardTarget(tower, player);
     update(sceneRect); ///so items dont leave any artifacts though works without it when using m_view->viewport()->repaint();
 
 }
@@ -104,7 +121,7 @@ void Level1::createBullet()
 void Level1::keyPressEvent(QKeyEvent *event)
 {
     if(event->key() == Qt::Key::Key_B){
-       createBullet();
+        createBullet();
     }
 
     if(event->key() == Qt::Key::Key_Up || event->key() == Qt::Key::Key_Down ||

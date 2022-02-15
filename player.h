@@ -22,7 +22,7 @@ protected:
 
     void update(const QRectF &rect = QRectF());
 private:
-    bool checkCollisions();
+    void checkCollisions();
 private:
     float speed;
     QColor color;
@@ -35,7 +35,7 @@ private:
     QRectF rectPast;
     QPainter* m_painter = nullptr;
 
-    QList<QGraphicsItem*> sceneItems;
+
     std::vector<QGraphicsItem*> v_itemsInCollisionWithPlayer;
 
     qreal old_x;

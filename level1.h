@@ -13,6 +13,8 @@
 #include <QLabel>
 #include <QElapsedTimer>
 
+
+
 class Level1 : public QGraphicsScene
 {
     Q_OBJECT
@@ -22,9 +24,11 @@ public:
     void setFPScounter();
     void countFPS();
 
+    static std::vector<Bullet*> *getBulletContainer();
 public slots:
     void advance();
     void checkTowersAreaPeriodicly();
+
 //    void update(const QRectF &rect = QRectF());
 signals:
 private:
@@ -33,12 +37,12 @@ private:
     QGraphicsView* m_view;
 //    Enemy* enemy;
     Tower* tower;
-    Bullet* bullet;
-    std::vector<Bullet*> v_bullets;
+
+
     Player* player;
 
     QRectF sceneRect;
-
+    static  std::vector<Bullet*> v_bullets;
     QLabel* fpsLabel;
     std::chrono::time_point<std::chrono::high_resolution_clock> start, end ;
     std::chrono::duration<float> duration, timeElapsed;

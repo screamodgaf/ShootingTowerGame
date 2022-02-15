@@ -2,7 +2,10 @@
 #include <iostream>
 #include <QDebug>
 #include <vector>
-
+#include "bullet.h"
+#include <iostream>
+#include <QGraphicsScene>
+#include "level1.h"
 Player::Player(QObject *parent)
     : QObject{parent}, color(Qt::green)
 {
@@ -24,7 +27,7 @@ QRectF Player::boundingRect() const
 
 void Player::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-//    std::cout << "paint" << "\n";
+    //    std::cout << "paint" << "\n";
     m_painter = painter;
     m_painter->setBrush(color);
     m_painter->drawRect(rect);
@@ -33,19 +36,19 @@ void Player::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
 
 void Player::update(const QRectF &rect)
 {
-//    std::cout << "update" << "\n";
+    //    std::cout << "update" << "\n";
 }
 
 
 void Player::advance(int step)
 {
-//    std::cout << "advance(int step)" << "\n";
-//    if (!step) return;
+    //    std::cout << "advance(int step)" << "\n";
+    //    if (!step) return;
 
-//    if(checkCollisions()==true){   ///we dont want to move the scene if there is a collision
-//        std::cout << "checkCollisions()==true" << "\n";
-//        return;
-//    }
+    //    if(checkCollisions()==true){   ///we dont want to move the scene if there is a collision
+    //        std::cout << "checkCollisions()==true" << "\n";
+    //        return;
+    //    }
 
 
     float _moveby = speed ;
@@ -64,6 +67,8 @@ void Player::advance(int step)
     else if(is_moving_right){
         this->moveBy(_moveby, 0);
     }
+
+    checkCollisions(); //check which items this player ocllides
 }
 
 
@@ -103,15 +108,22 @@ void Player::keyReleaseEvent(QKeyEvent *event)
     }
 }
 
-
-
-
-
-
-
-bool Player::checkCollisions()
+void Player::checkCollisions()
 {
-    sceneItems = collidingItems(); ///get items in collision | Returns a list of all items that collide with this item.
-    return true;
+    QList<QGraphicsItem*> itemsThisCollides = this->collidingItems(); ///get items in collision | Returns a list of all items that collide with this item.
+
+    for (int i = 0; i < itemsThisCollides.size(); ++i) {
+        if(dynamic_cast<Bullet*>(itemsThisCollides[i])){ //if the colliding item is of type Bullet*
+            std::cout << "Deleting bullet that hit the player" << "\n";
+            scene()->removeItem(itemsThisCollides[i]);
+
+            auto v = Level1::getBulletContainer();
+
+///            v->erase(v->begin()+i) - this wont work, cause this index is different than bullets index!
+            v->erase(std::remove(v->begin(), v->end(), itemsThisCollides[i]), v->end()); //remove the bullet from bullet container
+            delete itemsThisCollides[i];
+
+        }
+    }
 }
 

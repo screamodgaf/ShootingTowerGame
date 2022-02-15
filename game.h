@@ -7,6 +7,9 @@
 #include <QGraphicsItem>
 #include <QTimer>
 #include "level1.h"
+
+
+
 class Game : public QObject
 {
     Q_OBJECT

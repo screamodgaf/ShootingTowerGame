@@ -1,5 +1,8 @@
 #include "game.h"
 #include "enemy.h"
+
+std::vector<Bullet*> Level1::v_bullets; //declaration of static cullet container vector
+
 Game::Game(QObject *parent) : QObject{parent}
 {
     m_scene1 = new Level1(); ///QGraphicsScene has no visual appearance of its own; it only manages the items. You need to create a QGraphicsView widget to visualize the scene.
