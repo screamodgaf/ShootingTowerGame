@@ -3,6 +3,8 @@
 #include <QDebug>
 #include <QTimer>
 
+int n =0; QPointF origin1 = {200, 70};
+
 Level1::Level1( )
 {
     std::cout << "Level1() ctor" << "\n";
@@ -44,9 +46,19 @@ Level1::Level1( )
             &Level1::checkTowersAreaPeriodicly);
     towerAreaTimer->start(700);
 
+    //create particles:
+    QPointF origin = {400, 100};
+    particleSystem = new ParticleSystem(this, origin);
 
+    QPointF origin2 = {200, 70};
+    fireParticleSystem = new FireParticleSystem(this, origin2);
+
+    v_particleSystem.push_back(particleSystem);
+    v_particleSystem.push_back(fireParticleSystem);
+
+    //set gravity:
+    gravity = {0,0.1};
 }
-
 
 void Level1::advance()
 {
@@ -66,7 +78,22 @@ void Level1::advance()
     update(sceneRect); ///so items dont leave any artifacts though works without it when using m_view->viewport()->repaint();
     m_view->viewport()->repaint();
     //    player.passDelta(duration);countFPS();
+
+
+//    particleSystem->addParticle();
+//    particleSystem->run();
+
+//    fireParticleSystem->addParticle();
+//    fireParticleSystem->run();
+
+
+    for (int i = 0; i < v_particleSystem.size(); ++i) {
+        v_particleSystem[i]->applyForce(gravity);
+        v_particleSystem[i]->addParticle();
+        v_particleSystem[i]->run();
+    }
 }
+
 
 
 void Level1::countFPS()
@@ -85,6 +112,7 @@ void Level1::countFPS()
     }
 
 }
+
 
 
 std::vector<Bullet *> *Level1::getBulletContainer()

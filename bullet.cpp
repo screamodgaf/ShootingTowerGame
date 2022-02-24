@@ -4,8 +4,8 @@
 #include <QDebug>
 #include <iostream>
 
-Bullet::Bullet(QGraphicsScene *scene, std::vector<Bullet *> *v_bullets, QGraphicsItem *parent): /*: QGraphicsItem{parent}*/
-m_scene(scene)
+Bullet::Bullet(QGraphicsScene *scene, std::vector<Bullet *> *v_bullets, QGraphicsItem *parent)  /*: QGraphicsItem{parent}*/
+
 {
 
     rect.setSize(QSizeF(30,2 ));
@@ -43,7 +43,8 @@ void Bullet::estimateBulletTrajectory(QGraphicsItem* origin, QGraphicsItem* targ
 
     line.setLine(ln);
     line.setPen(pen);
-    m_scene->addItem(&line); //drawing
+    this->scene()->addItem(&line); //drawing
+//    m_scene->addItem(&line); //drawing
     ///acceleration (normalized vector) from origin to target to add to velocity every frame so bullet heads toward target
     ///acc.setX(ln.p1().rx() - ln.p2().rx()); //works too instead of acc.setX((target->x() + targetWidth/2) - (origin->x() + orginWidth/2));
     ///acc.setY(ln.p1().ry() - ln.p2().ry()); //works too works too instead of acc.setY((target->y() + targetHight/2) - (origin->y() + orginHight/2));

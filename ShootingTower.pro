@@ -9,6 +9,10 @@ CONFIG += c++17, console
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    Particles/fireparticle.cpp \
+    Particles/fireparticlesystem.cpp \
+    Particles/particle.cpp \
+    Particles/particlesystem.cpp \
     bullet.cpp \
     enemy.cpp \
     game.cpp \
@@ -18,6 +22,10 @@ SOURCES += \
     tower.cpp
 
 HEADERS += \
+    Particles/fireparticle.h \
+    Particles/fireparticlesystem.h \
+    Particles/particle.h \
+    Particles/particlesystem.h \
     bullet.h \
     enemy.h \
     game.h \

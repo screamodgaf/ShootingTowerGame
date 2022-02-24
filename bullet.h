@@ -36,7 +36,7 @@ private:
     float targetHight;
 
     QGraphicsLineItem line;
-    QGraphicsScene* m_scene;
+
 
 
 };
