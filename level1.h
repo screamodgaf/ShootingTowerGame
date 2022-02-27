@@ -14,6 +14,8 @@
 #include <QElapsedTimer>
 #include "Particles/particlesystem.h"
 #include "Particles/fireparticlesystem.h"
+#include "Particles/repeller.h"
+
 class Level1 : public QGraphicsScene
 {
     Q_OBJECT
@@ -51,7 +53,8 @@ private:
     FireParticleSystem* fireParticleSystem;
     std::vector<ParticleSystem*> v_particleSystem;
 
-  QVector2D gravity;
+    QVector2D gravity;
+    Repeller* repeller;
 };
 
 #endif // LEVEL1_H

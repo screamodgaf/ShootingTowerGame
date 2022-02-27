@@ -13,7 +13,9 @@ SOURCES += \
     Particles/fireparticlesystem.cpp \
     Particles/particle.cpp \
     Particles/particlesystem.cpp \
+    Particles/repeller.cpp \
     bullet.cpp \
+#    datasingleton.cpp \
     enemy.cpp \
     game.cpp \
     level1.cpp \
@@ -26,7 +28,9 @@ HEADERS += \
     Particles/fireparticlesystem.h \
     Particles/particle.h \
     Particles/particlesystem.h \
+    Particles/repeller.h \
     bullet.h \
+#    datasingleton.h \
     enemy.h \
     game.h \
     level1.h \

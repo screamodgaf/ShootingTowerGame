@@ -4,7 +4,7 @@
 #include <QTimer>
 
 int n =0; QPointF origin1 = {200, 70};
-
+float r= 200;
 Level1::Level1( )
 {
     std::cout << "Level1() ctor" << "\n";
@@ -58,6 +58,11 @@ Level1::Level1( )
 
     //set gravity:
     gravity = {0,0.1};
+
+    //initialize repeller:
+    QVector2D rpos(170, 300);
+    repeller = new Repeller(nullptr, &rpos);
+    this->addItem(repeller);
 }
 
 void Level1::advance()
@@ -66,32 +71,36 @@ void Level1::advance()
     for (int i = 0; i < v_bullets.size(); ++i) {
         if(v_bullets[i]->checkBulletsDistFromTower(&v_bullets)){
             v_bullets.erase(std::remove(v_bullets.begin(), v_bullets.end(), v_bullets[i]), v_bullets.end());
-            // this had wrong syntax thus the crash: v_bullets.erase((std::remove(v_bullets.begin(), v_bullets.end(), v_bullets[i]), v_bullets.end()));
-            //v_bullets.erase(v_bullets.begin()+i);
             continue;
         }
         v_bullets[i]->update();
     }
     player->advance(1);
 
+//    QVector2D playerPos(player->pos().x(), player->pos().y());
+//    repeller->update(playerPos);
+
+
+
+
+    for (int i = 0; i < v_particleSystem.size(); ++i) {
+        v_particleSystem[i]->applyForce(gravity);
+
+        QVector2D v = { (float)player->x(), (float)player->y() };
+        repeller->update(v);
+//        repeller->setPos(player->x(), player->y());
+
+        v_particleSystem[i]->applyReppeler(repeller);
+
+        v_particleSystem[i]->addParticle();
+        v_particleSystem[i]->run();
+    }
+
 
     update(sceneRect); ///so items dont leave any artifacts though works without it when using m_view->viewport()->repaint();
     m_view->viewport()->repaint();
     //    player.passDelta(duration);countFPS();
 
-
-//    particleSystem->addParticle();
-//    particleSystem->run();
-
-//    fireParticleSystem->addParticle();
-//    fireParticleSystem->run();
-
-
-    for (int i = 0; i < v_particleSystem.size(); ++i) {
-        v_particleSystem[i]->applyForce(gravity);
-        v_particleSystem[i]->addParticle();
-        v_particleSystem[i]->run();
-    }
 }
 
 
