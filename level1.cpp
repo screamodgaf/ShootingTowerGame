@@ -2,9 +2,9 @@
 #include <iostream>
 #include <QDebug>
 #include <QTimer>
+#include <QPixmap>
+#include <QGraphicsPixmapItem>
 
-int n =0; QPointF origin1 = {200, 70};
-float r= 200;
 Level1::Level1( )
 {
     std::cout << "Level1() ctor" << "\n";
@@ -46,15 +46,56 @@ Level1::Level1( )
             &Level1::checkTowersAreaPeriodicly);
     towerAreaTimer->start(700);
 
-    //create particles:
-    QPointF origin = {400, 100};
-    particleSystem = new ParticleSystem(this, origin);
+    //load qPixmap:
+    QPixmap* pixmap1 = new QPixmap("E:\\Qt_workspace\\ShootingTower\\smoke4.png");
+    //    pixmapItem = new QGraphicsPixmapItem;
+    //    pixmapItem->setPixmap(*pixmap1);
+    //    this->addItem(pixmapItem);
 
-    QPointF origin2 = {200, 70};
-    fireParticleSystem = new FireParticleSystem(this, origin2);
+    //        QPainter pix(pixmap1);
+    //        pix.setCompositionMode(QPainter::CompositionMode_SourceAtop);
+    //        pix.drawPixmap(pixmap1->rect()  , *pixmap1);
+    //pix.set
+    pixmap1->setDevicePixelRatio(0.5);
+
+    QPainter pix(pixmap1);
+    pix.setCompositionMode(QPainter::CompositionMode_DestinationOver);
+//        pix.fillRect(pixmap1->rect(), QColor(0, 0, 0,  140)); // colorize the light in any /*color
+    pix.drawPixmap(pixmap1->rect(), *pixmap1);
+    pix.setRenderHints(QPainter::Antialiasing);
+
+
+
+
+    //create particles:
+    QPointF origin1 = {100, 100};
+    particleSystem = new ParticleSystem(this, pixmap1, origin1);
+
+    //    QPointF origin2 = {200, 70};
+    //    fireParticleSystem = new FireParticleSystem(this, pixmap1, origin2);
 
     v_particleSystem.push_back(particleSystem);
-    v_particleSystem.push_back(fireParticleSystem);
+
+    //    v_particleSystem.push_back(fireParticleSystem);
+
+
+
+
+    ///add another particle system:
+    QPixmap* pixmap2 = new QPixmap("E:\\Qt_workspace\\ShootingTower\\smoke6.png");
+    pixmap2->setDevicePixelRatio(5);
+    //create particles:
+    QPointF origin2 = {110, 100};
+    particleSystem2 = new ParticleSystem(this, pixmap2, origin2);
+    v_particleSystem.push_back(particleSystem2);
+    QPainter pix2(pixmap2);
+    pix2.setCompositionMode(QPainter::CompositionMode_Plus);
+//        pix.fillRect(pixmap1->rect(), QColor(0, 0, 0,  140)); // colorize the light in any /*color
+    pix2.drawPixmap(pixmap2->rect(), *pixmap2);
+    pix2.setRenderHints(QPainter::Antialiasing);
+
+
+
 
     //set gravity:
     gravity = {0,0.1};
@@ -63,6 +104,9 @@ Level1::Level1( )
     QVector2D rpos(170, 300);
     repeller = new Repeller(nullptr, &rpos);
     this->addItem(repeller);
+
+
+
 }
 
 void Level1::advance()
@@ -77,8 +121,8 @@ void Level1::advance()
     }
     player->advance(1);
 
-//    QVector2D playerPos(player->pos().x(), player->pos().y());
-//    repeller->update(playerPos);
+    //    QVector2D playerPos(player->pos().x(), player->pos().y());
+    //    repeller->update(playerPos);
 
 
 
@@ -88,7 +132,7 @@ void Level1::advance()
 
         QVector2D v = { (float)player->x(), (float)player->y() };
         repeller->update(v);
-//        repeller->setPos(player->x(), player->y());
+        //        repeller->setPos(player->x(), player->y());
 
         v_particleSystem[i]->applyReppeler(repeller);
 

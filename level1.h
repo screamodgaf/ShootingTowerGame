@@ -47,6 +47,7 @@ private:
     std::chrono::duration<float> duration, timeElapsed;
 
 
+    QGraphicsPixmapItem* pixmapItem;
     ParticleSystem* particleSystem;
     ParticleSystem* particleSystem1;
     ParticleSystem* particleSystem2;

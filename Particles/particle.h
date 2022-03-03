@@ -4,16 +4,17 @@
 #include <QGraphicsItem>
 #include <QObject>
 #include <QVector2D>
-class Particle : public QGraphicsItem
+#include <QGraphicsPixmapItem>
+class Particle : public QGraphicsPixmapItem
 {
 
 public:
-    Particle(QPointF& origin);
+    Particle(QPixmap* pixmap, QPointF& origin);
     ~Particle();
     void update();
-    QRectF boundingRect() const override;
+
     void advance(int phase) override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
+//    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
     bool is_finished();
     void applyForce(QVector2D& force);
 protected:
@@ -24,6 +25,7 @@ protected:
 
     QRectF rect;
     QPointF m_origin;
+
 };
 
 #endif // PARTICLE_H

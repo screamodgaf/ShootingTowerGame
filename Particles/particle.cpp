@@ -3,9 +3,12 @@
 #include <QPainter>
 #include <ctime>
 #include <iostream>
-Particle::Particle(QPointF &origin): m_origin(origin)
+#include <QPixmap>
+#include <QGraphicsScene>
+Particle::Particle(QPixmap *pixmap, QPointF &origin): m_origin(origin)
 {
-    rect.setSize(QSizeF(40,40));
+
+    //    rect.setSize(QSizeF(40,40));
 
     //generate random float:
 
@@ -15,17 +18,28 @@ Particle::Particle(QPointF &origin): m_origin(origin)
     float r1 = min + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(max-min)));
 
     vel = {r, r1 };
-//    acc = {0, 0.02};
+    //    acc = {0, 0.02};
     pos = {(float)m_origin.x(), (float)m_origin.y()};
     this->setPos(pos.x(), pos.y());
-//rect.setSize(QSizeF(std::abs(r *60), std::abs(r *60)));
+    //rect.setSize(QSizeF(std::abs(r *60), std::abs(r *60)));
     lifespan = 1;
+
+    //set QPixmap
+    if(pixmap == nullptr)
+        std::cout << "pixmap == nullptr" << "\n";
+    else {
+        //        QPixmap* pixmap1 = new QPixmap("E:\\Qt_workspace\\ShootingTower\\smoke.png");
+        this->setPixmap( *pixmap );
+
+    }
 }
 
 
 void Particle::update()
 {
 
+    if(lifespan>=0)
+        this->setOpacity(lifespan); ///qreal alpha is specified in the range 0.0-1.0.
 
     vel += acc;
     pos += vel;
@@ -37,32 +51,30 @@ void Particle::update()
     //    }
     this->setPos(pos.x(), pos.y());
     acc = {0,0}; ///reseting acceleration to 0
-    lifespan-=0.005;
+//    lifespan-=0.005;
+    lifespan-=0.018;
 }
 
-QRectF Particle::boundingRect() const
-{
-    return rect;
-}
+
 
 void Particle::advance(int phase)
 {
 
 }
 
-void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
-{
-    QRectF rect = boundingRect();
+//void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+//{
+//    QRectF rect = boundingRect();
 
-    QColor white = Qt::white;
-    if(lifespan>=0)
-        white.setAlphaF(lifespan); ///qreal alpha is specified in the range 0.0-1.0.
-    painter->setBrush(white);
-    painter->setPen(Qt::transparent);
-    painter->setRenderHint(QPainter::Antialiasing);
-    painter->drawEllipse(rect);
+//    QColor white = Qt::white;
+//    if(lifespan>=0)
+//        white.setAlphaF(lifespan); ///qreal alpha is specified in the range 0.0-1.0.
+//    painter->setBrush(white);
+//    painter->setPen(Qt::transparent);
+//    painter->setRenderHint(QPainter::Antialiasing);
+//    painter->drawEllipse(rect);
 
-}
+//}
 
 bool Particle::is_finished()
 {
@@ -79,5 +91,5 @@ void Particle::applyForce(QVector2D &force)
 
 Particle::~Particle()
 {
-//    std::cout << "particle DESTROYED" << "\n";
+//         std::cout << "particle DESTROYED" << "\n";
 }
