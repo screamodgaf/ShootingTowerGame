@@ -3,7 +3,7 @@
 #include <QGraphicsItem>
 #include <QObject>
 #include <QPainter>
-
+#include <QGraphicsPixmapItem>
 class Tower : public QObject, public QGraphicsItem
 {
     Q_OBJECT
@@ -12,7 +12,7 @@ public:
     QRectF boundingRect() const override;
     void advance(int phase) override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
-    bool checkCollisionsWithAttackArea(QGraphicsItem* item);
+    bool checkCollisionsWithAttackArea(QGraphicsItem *item);
 signals:
 private:
     QRectF rect;

@@ -45,10 +45,12 @@ void Tower::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWi
 bool Tower::checkCollisionsWithAttackArea(QGraphicsItem *item)
 {
     if(attackArea->collidesWithItem(item)){
-        std::cout << "attackArea->collidesWithItem(item)" << "\n";
+//        std::cout << "## attackArea->collidesWithItem(item)" << "\n";
         return true;
+    }else{
+//        std::cout << "aaa" << "\n";
+        return false;
     }
-
 }
 
 void Tower::advance(int phase)

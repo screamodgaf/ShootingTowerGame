@@ -17,14 +17,18 @@ public:
 //    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
     bool is_finished();
     void applyForce(QVector2D& force);
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+
 protected:
     QVector2D pos;
     QVector2D vel;
     QVector2D acc;
     float lifespan;
-
+    float d; //delta
     QRectF rect;
     QPointF m_origin;
+    QPixmap *m_pixmap;
 
 };
 

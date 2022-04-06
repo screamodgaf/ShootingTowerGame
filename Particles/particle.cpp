@@ -5,7 +5,8 @@
 #include <iostream>
 #include <QPixmap>
 #include <QGraphicsScene>
-Particle::Particle(QPixmap *pixmap, QPointF &origin): m_origin(origin)
+#include "level1.h"
+Particle::Particle(QPixmap *pixmap, QPointF &origin): m_origin(origin), m_pixmap(pixmap)
 {
 
     //    rect.setSize(QSizeF(40,40));
@@ -29,9 +30,15 @@ Particle::Particle(QPixmap *pixmap, QPointF &origin): m_origin(origin)
         std::cout << "pixmap == nullptr" << "\n";
     else {
         //        QPixmap* pixmap1 = new QPixmap("E:\\Qt_workspace\\ShootingTower\\smoke.png");
-        this->setPixmap( *pixmap );
+
+
+//        this->setPixmap( *pixmap );
 
     }
+
+
+
+
 }
 
 
@@ -40,6 +47,8 @@ void Particle::update()
 
     if(lifespan>=0)
         this->setOpacity(lifespan); ///qreal alpha is specified in the range 0.0-1.0.
+
+
 
     vel += acc;
     pos += vel;
@@ -51,8 +60,8 @@ void Particle::update()
     //    }
     this->setPos(pos.x(), pos.y());
     acc = {0,0}; ///reseting acceleration to 0
-//    lifespan-=0.005;
-    lifespan-=0.018;
+    //    lifespan-=0.005;
+    lifespan-=0.015;
 }
 
 
@@ -86,10 +95,32 @@ bool Particle::is_finished()
 
 void Particle::applyForce(QVector2D &force)
 {
-    vel+= force;
+        float speed = 20.f;
+        d = Level1::getDelta();
+        acc *= speed*  d;
+
+    //qDebug() << acc;
+    acc+= force;
+}
+
+void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    //    std::cout << "void Particle::paint(QPainter" << "\n";
+    painter->setCompositionMode(QPainter::CompositionMode_Plus);
+
+    //    m_pixmap = m_pixmap->scaled(10,10);
+
+    painter->drawPixmap(m_pixmap->rect(), *m_pixmap);
+    painter->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, true);
+    //painter.setCompositionMode(QPainter::CompositionMode_DestinationOver);
+    //pix.setCompositionMode(QPainter::CompositionMode_Plus);
+    //painter->fillRect(m_pixmap->rect(), QColor(110, 110, 110,  140)); // colorize the light in
+
+
+
 }
 
 Particle::~Particle()
 {
-//         std::cout << "particle DESTROYED" << "\n";
+    //         std::cout << "particle DESTROYED" << "\n";
 }

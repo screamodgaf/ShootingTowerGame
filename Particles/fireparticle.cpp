@@ -1,6 +1,6 @@
 #include "fireparticle.h"
 #include <QPainter>
-FireParticle::FireParticle(QPointF &origin): Particle(origin)
+FireParticle::FireParticle(QPixmap *pixmap, QPointF &origin): Particle(pixmap, origin)
 {
 
 }

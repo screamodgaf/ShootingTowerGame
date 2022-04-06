@@ -29,7 +29,7 @@ private:
     QVector2D pos;
     QVector2D vel;
     QVector2D acc;
-
+    float d; //delta
     float orginWidth;
     float orginHight;
     float targetWidth;

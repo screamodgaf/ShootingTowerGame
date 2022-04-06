@@ -25,7 +25,7 @@ void ParticleSystem::run()
 void ParticleSystem::addParticle()
 {
     for (int i = 0; i < 1; ++i) {
-//        if(v_particles.size()>1160) return;
+//        if(v_particles.size()>60 ) return;
         Particle* particle = new Particle(m_pixmap, m_origin);
         m_scene->addItem(particle);
         v_particles.push_back(particle);

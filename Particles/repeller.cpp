@@ -3,19 +3,24 @@
 #include <iostream>
 #include <algorithm>
 #include <QObject>
-Repeller::Repeller(QGraphicsItem *parent, QVector2D *position): QGraphicsItem{parent}
+Repeller::Repeller(QGraphicsItem *parent, QVector2D *position): QGraphicsItem{parent},
+    m_parent(parent)
 {
-    rect.setSize(QSizeF(40,40));
+//    rect.setSize(QSizeF(40,40));
+    rect = parent->boundingRect();
     if(position){
         pos = *position;
         this->setPos(pos.x(), pos.y());
     }else
-        this->setPos(parent->x(), parent->y());
+//        this->setPos(parent->x(), parent->y());
+        this->setPos(parent->x() + parent->boundingRect().width()/2
+                     , parent->y() + parent->boundingRect().height()/2);
 }
 
 void Repeller::update(QVector2D& position)
 {
-    this->setPos(position.x(), position.y());
+    this->setPos(position.x() + m_parent->boundingRect().width()/2 ,
+                 position.y() + m_parent->boundingRect().height()/2);
     pos = position;
 }
 
@@ -31,16 +36,16 @@ void Repeller::advance(int phase)
 
 void Repeller::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    QRectF rect = boundingRect();
+//    QRectF rect = boundingRect();
 
-    QColor red = Qt::blue;
-    //    if(lifespan>=0)
-    //        red.setAlphaF(lifespan); ///qreal alpha is specified in the range 0.0-1.0.
-    painter->setBrush(red);
-    painter->setPen(Qt::transparent);
+//    QColor red = Qt::blue;
+//    //    if(lifespan>=0)
+//    //        red.setAlphaF(lifespan); ///qreal alpha is specified in the range 0.0-1.0.
+//    painter->setBrush(red);
+//    painter->setPen(Qt::transparent);
 
-    painter->setRenderHint(QPainter::Antialiasing);
-    painter->drawEllipse(rect);
+//    painter->setRenderHint(QPainter::Antialiasing);
+//    painter->drawEllipse(rect);
 }
 
 QVector2D Repeller::repel(Particle *p)

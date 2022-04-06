@@ -6,7 +6,7 @@
 class FireParticle: public Particle
 {
 public:
-    FireParticle(QPointF& origin);
+    FireParticle(QPixmap* pixmap, QPointF& origin);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
 
 };

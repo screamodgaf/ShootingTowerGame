@@ -18,6 +18,7 @@ protected:
     QVector2D acc;
     QRectF rect;
     QPointF m_origin;
+    QGraphicsItem *m_parent;
 };
 
 #endif // REPELLER_H

@@ -11,6 +11,7 @@ CONFIG += c++17, console
 SOURCES += \
 #    Particles/fireparticle.cpp \
 #    Particles/fireparticlesystem.cpp \
+    AutonomousAgents/agent.cpp \
     Particles/particle.cpp \
     Particles/particlesystem.cpp \
     Particles/repeller.cpp \
@@ -25,6 +26,7 @@ SOURCES += \
 HEADERS += \
 #    Particles/fireparticle.h \
 #    Particles/fireparticlesystem.h \
+    AutonomousAgents/agent.h \
     Particles/particle.h \
     Particles/particlesystem.h \
     Particles/repeller.h \

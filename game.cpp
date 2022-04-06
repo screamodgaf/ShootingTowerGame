@@ -2,6 +2,9 @@
 #include "enemy.h"
 
 std::vector<Bullet*> Level1::v_bullets; //declaration of static cullet container vector
+std::chrono::duration<float> Level1::duration;
+std::chrono::duration<float> Level1::timeElapsed;
+
 
 Game::Game(QObject *parent) : QObject{parent}
 {
@@ -9,7 +12,7 @@ Game::Game(QObject *parent) : QObject{parent}
     QTimer* timer = new QTimer;
 
     QObject::connect(timer, &QTimer::timeout, m_scene1, &Level1::advance); ///Finally, we create a QTimer and connect its timeout() signal to the advance() slot of the scene. Every time the timer fires, the scene will advance one frame. We then tell the timer to fire every 1000/33 milliseconds. This will give us a frame rate of 30 frames a second
-    timer->start(1000 / 60);
+    timer->start(1000 /60   );
 }
 
 

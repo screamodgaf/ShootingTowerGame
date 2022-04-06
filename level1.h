@@ -12,6 +12,7 @@
 #include <vector>
 #include <QLabel>
 #include <QElapsedTimer>
+
 #include "Particles/particlesystem.h"
 #include "Particles/fireparticlesystem.h"
 #include "Particles/repeller.h"
@@ -26,10 +27,12 @@ public:
     void countFPS();
 
     static std::vector<Bullet*> *getBulletContainer();
+
+
 public slots:
     void advance();
     void checkTowersAreaPeriodicly();
-
+    static float getDelta();
     //    void update(const QRectF &rect = QRectF());
 signals:
 private:
@@ -44,7 +47,7 @@ private:
     static  std::vector<Bullet*> v_bullets;
     QLabel* fpsLabel;
     std::chrono::time_point<std::chrono::high_resolution_clock> start, end ;
-    std::chrono::duration<float> duration, timeElapsed;
+    static std::chrono::duration<float> duration, timeElapsed;
 
 
     QGraphicsPixmapItem* pixmapItem;

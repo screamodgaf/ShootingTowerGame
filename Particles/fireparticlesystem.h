@@ -5,8 +5,10 @@
 class FireParticleSystem: public ParticleSystem
 {
 public:
-    FireParticleSystem(QGraphicsScene *scene, QPointF &origin);
+    FireParticleSystem(QGraphicsScene *scene, QPixmap* pixmap, QPointF &origin);
     void addParticle();
+private:
+    QPixmap *m_pixmap;
 
 };
 

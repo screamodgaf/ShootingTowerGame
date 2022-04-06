@@ -33,6 +33,8 @@ void Bullet::estimateBulletTrajectory(QGraphicsItem* origin, QGraphicsItem* targ
     targetWidth = target->boundingRect().width();
     targetHight = target->boundingRect().height();
 
+
+    std::cout << "targetWidth: " << targetWidth << "\n";
     ///draws line from tower CENTRE (+targetWidth/2 for centering) to target's CENTRE:
     //setting QLineF:
     QLineF ln;
@@ -69,8 +71,10 @@ void Bullet::setRotationTowardTarget(QGraphicsItem *origin_, QGraphicsItem *targ
 
 void Bullet::update()
 {
-//    checkBulletsDistFromTower();
+    float speed = 50.f;
+    d = Level1::getDelta();
 
+    acc *= speed*  d;
     vel += acc;
     pos += vel;
 
@@ -80,7 +84,7 @@ void Bullet::update()
     //        vel.setY(vel.y()/2);
     //    }
     this->setPos(pos.x(), pos.y());
-    vel = {0,0};
+    acc = {0,0};
 
 
 }

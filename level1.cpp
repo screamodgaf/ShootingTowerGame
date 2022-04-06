@@ -29,9 +29,14 @@ Level1::Level1( )
     tower = new Tower(this);
     //    enemy = new Enemy;
 
-    player = new Player(this);
+    //create player:
+    QPixmap* playerPixmap = new QPixmap("E:\\Qt_workspace\\ShootingTower\\ship1.png");
+    //   *playerPixmap = playerPixmap->scaled(QSize(40,40 ));
+    player = new Player(playerPixmap);
     player->setFlag(QGraphicsItem::ItemIsFocusable); ///only one item can respond to keyboard events
     player->setFocus();
+
+
 
     // player->setPos(player->mapToScene(30,500));
     //add to Scene
@@ -39,6 +44,12 @@ Level1::Level1( )
     this->addItem(player);
     //set FPS counter stuff:
     setFPScounter();
+
+
+
+
+
+
 
     //periodic check if enemy within tower so it shoots every second and not every every frame:
     QTimer* towerAreaTimer = new QTimer();
@@ -48,51 +59,46 @@ Level1::Level1( )
 
     //load qPixmap:
     QPixmap* pixmap1 = new QPixmap("E:\\Qt_workspace\\ShootingTower\\smoke4.png");
-    //    pixmapItem = new QGraphicsPixmapItem;
-    //    pixmapItem->setPixmap(*pixmap1);
-    //    this->addItem(pixmapItem);
-
-    //        QPainter pix(pixmap1);
-    //        pix.setCompositionMode(QPainter::CompositionMode_SourceAtop);
-    //        pix.drawPixmap(pixmap1->rect()  , *pixmap1);
-    //pix.set
-    pixmap1->setDevicePixelRatio(0.5);
-
-    QPainter pix(pixmap1);
-    pix.setCompositionMode(QPainter::CompositionMode_DestinationOver);
-//        pix.fillRect(pixmap1->rect(), QColor(0, 0, 0,  140)); // colorize the light in any /*color
-    pix.drawPixmap(pixmap1->rect(), *pixmap1);
-    pix.setRenderHints(QPainter::Antialiasing);
-
-
+    *pixmap1 = pixmap1->scaled(QSize(140,140 ));
 
 
     //create particles:
     QPointF origin1 = {100, 100};
     particleSystem = new ParticleSystem(this, pixmap1, origin1);
 
-    //    QPointF origin2 = {200, 70};
-    //    fireParticleSystem = new FireParticleSystem(this, pixmap1, origin2);
-
     v_particleSystem.push_back(particleSystem);
 
-    //    v_particleSystem.push_back(fireParticleSystem);
 
 
 
 
     ///add another particle system:
-    QPixmap* pixmap2 = new QPixmap("E:\\Qt_workspace\\ShootingTower\\smoke6.png");
-    pixmap2->setDevicePixelRatio(5);
+    QPixmap* pixmap2 = new QPixmap("E:\\Qt_workspace\\ShootingTower\\light.png");
+    *pixmap2 = pixmap2->scaled(QSize(140,140 ));
+
+
+    //pixmap2->setDevicePixelRatio(0.1);
     //create particles:
-    QPointF origin2 = {110, 100};
+    QPointF origin2 = {350, 100};
+    //    QPainter pix2(pixmap2);
+    //    pix2.fillRect(pixmap2->rect(), QColor(100, 30, 30, 128));
+    //    pix2.setCompositionMode(QPainter::CompositionMode_Overlay);
+
+    //    pix2.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, true);
+
+
+    //    QPixmap* pixmap3 = new QPixmap("E:\\Qt_workspace\\ShootingTower\\5.png");
+
+    //    pix2.drawPixmap(pixmap2->rect(), *pixmap2, pixmap3->rect());
+
+
+
+
+
     particleSystem2 = new ParticleSystem(this, pixmap2, origin2);
     v_particleSystem.push_back(particleSystem2);
-    QPainter pix2(pixmap2);
-    pix2.setCompositionMode(QPainter::CompositionMode_Plus);
-//        pix.fillRect(pixmap1->rect(), QColor(0, 0, 0,  140)); // colorize the light in any /*color
-    pix2.drawPixmap(pixmap2->rect(), *pixmap2);
-    pix2.setRenderHints(QPainter::Antialiasing);
+
+
 
 
 
@@ -101,8 +107,9 @@ Level1::Level1( )
     gravity = {0,0.1};
 
     //initialize repeller:
-    QVector2D rpos(170, 300);
-    repeller = new Repeller(nullptr, &rpos);
+    //    QVector2D rpos(170, 300);
+    //    repeller = new Repeller(nullptr, &rpos);
+    repeller = new Repeller(player, nullptr);
     this->addItem(repeller);
 
 
@@ -112,6 +119,8 @@ Level1::Level1( )
 void Level1::advance()
 {
     countFPS();
+
+
     for (int i = 0; i < v_bullets.size(); ++i) {
         if(v_bullets[i]->checkBulletsDistFromTower(&v_bullets)){
             v_bullets.erase(std::remove(v_bullets.begin(), v_bullets.end(), v_bullets[i]), v_bullets.end());
@@ -127,7 +136,8 @@ void Level1::advance()
 
 
 
-    for (int i = 0; i < v_particleSystem.size(); ++i) {
+    for (size_t i = 0; i < v_particleSystem.size(); ++i) {
+
         v_particleSystem[i]->applyForce(gravity);
 
         QVector2D v = { (float)player->x(), (float)player->y() };
@@ -141,7 +151,7 @@ void Level1::advance()
     }
 
 
-    update(sceneRect); ///so items dont leave any artifacts though works without it when using m_view->viewport()->repaint();
+    //    update(sceneRect); ///so items dont leave any artifacts though works without it when using m_view->viewport()->repaint();
     m_view->viewport()->repaint();
     //    player.passDelta(duration);countFPS();
 
@@ -176,12 +186,18 @@ std::vector<Bullet *> *Level1::getBulletContainer()
 
 
 
+
 void Level1::checkTowersAreaPeriodicly()
 {
     if(tower->checkCollisionsWithAttackArea(player)){
         createBullet();
     }
 
+}
+
+float Level1::getDelta()
+{
+    return duration.count();
 }
 
 void Level1::createBullet()
