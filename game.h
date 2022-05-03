@@ -15,8 +15,11 @@ class Game : public QObject
     Q_OBJECT
 public:
     explicit Game(QObject *parent = nullptr);
+    static Level1* getScene();
+    ~Game();
 private:
-    Level1* m_scene1;
+    static  Level1* m_scene1;
+    QTimer* timer = nullptr;
 
 signals:
 

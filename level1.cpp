@@ -4,6 +4,10 @@
 #include <QTimer>
 #include <QPixmap>
 #include <QGraphicsPixmapItem>
+#include <QProgressBar>
+#include "termcolor.hpp"
+
+
 
 Level1::Level1( )
 {
@@ -19,8 +23,13 @@ Level1::Level1( )
     m_view->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
     m_view->setViewportUpdateMode(QGraphicsView::NoViewportUpdate );
 
-    m_view->setScene(this);
+    painter = new QPainter();
 
+
+
+
+    m_view->setScene(this);
+//b  = new QProgressBar(m_view);
     // a blue background
     m_view->setBackgroundBrush(Qt::black);
     m_view->show();
@@ -30,32 +39,25 @@ Level1::Level1( )
     //    enemy = new Enemy;
 
     //create player:
-    QPixmap* playerPixmap = new QPixmap("E:\\Qt_workspace\\ShootingTower\\ship1.png");
+    playerPixmap = new QPixmap("E:\\Qt_workspace\\ShootingTower\\ship1.png");
     //   *playerPixmap = playerPixmap->scaled(QSize(40,40 ));
-    player = new Player(playerPixmap);
+
+    player = new Player(playerPixmap, this);
     player->setFlag(QGraphicsItem::ItemIsFocusable); ///only one item can respond to keyboard events
     player->setFocus();
+    //create targetting area for player:
+//    playerWeapons = new PlayerWeapons(player);
 
-
+    //create bullet shooting control:
+    bulletShooting = new BulletShooting(this);
 
     // player->setPos(player->mapToScene(30,500));
     //add to Scene
     this->addItem(tower);
     this->addItem(player);
+//    this->addItem(playerWeapons);
     //set FPS counter stuff:
     setFPScounter();
-
-
-
-
-
-
-
-    //periodic check if enemy within tower so it shoots every second and not every every frame:
-    QTimer* towerAreaTimer = new QTimer();
-    connect(towerAreaTimer, &QTimer::timeout, this,
-            &Level1::checkTowersAreaPeriodicly);
-    towerAreaTimer->start(700);
 
     //load qPixmap:
     QPixmap* pixmap1 = new QPixmap("E:\\Qt_workspace\\ShootingTower\\smoke4.png");
@@ -64,13 +66,8 @@ Level1::Level1( )
 
     //create particles:
     QPointF origin1 = {100, 100};
-    particleSystem = new ParticleSystem(this, pixmap1, origin1);
-
+    particleSystem = new ParticleSystem(pixmap1, origin1);
     v_particleSystem.push_back(particleSystem);
-
-
-
-
 
     ///add another particle system:
     QPixmap* pixmap2 = new QPixmap("E:\\Qt_workspace\\ShootingTower\\light.png");
@@ -91,17 +88,8 @@ Level1::Level1( )
 
     //    pix2.drawPixmap(pixmap2->rect(), *pixmap2, pixmap3->rect());
 
-
-
-
-
-    particleSystem2 = new ParticleSystem(this, pixmap2, origin2);
+    particleSystem2 = new ParticleSystem(pixmap2, origin2);
     v_particleSystem.push_back(particleSystem2);
-
-
-
-
-
 
     //set gravity:
     gravity = {0,0.1};
@@ -111,29 +99,33 @@ Level1::Level1( )
     //    repeller = new Repeller(nullptr, &rpos);
     repeller = new Repeller(player, nullptr);
     this->addItem(repeller);
-
-
-
 }
+
 
 void Level1::advance()
 {
+//    drawBackground(painter, sceneRect);
+
     countFPS();
-
-
-    for (int i = 0; i < v_bullets.size(); ++i) {
-        if(v_bullets[i]->checkBulletsDistFromTower(&v_bullets)){
-            v_bullets.erase(std::remove(v_bullets.begin(), v_bullets.end(), v_bullets[i]), v_bullets.end());
-            continue;
-        }
-        v_bullets[i]->update();
-    }
+    tower->advance(1);
     player->advance(1);
-
+//    playerWeapons->advance(1); ///its outside player, cause if it was inside Player class, than would be of type Player, and would extand the player;s collision area
     //    QVector2D playerPos(player->pos().x(), player->pos().y());
     //    repeller->update(playerPos);
 
+//TODO
+        for (int i = 0; i < v_bullets.size(); ++i) {
+            if(v_bullets[i]->checkBulletsDistFromShooter()){ //if certain bullet is too far the shooter - erase:
 
+                delete v_bullets[i];
+                v_bullets[i] = nullptr;
+
+                 v_bullets.erase(std::remove(v_bullets.begin(), v_bullets.end(), v_bullets[i]), v_bullets.end());
+
+                continue;
+            }
+            v_bullets[i]->update();
+        }
 
 
     for (size_t i = 0; i < v_particleSystem.size(); ++i) {
@@ -151,7 +143,9 @@ void Level1::advance()
     }
 
 
-    //    update(sceneRect); ///so items dont leave any artifacts though works without it when using m_view->viewport()->repaint();
+
+    //    update(sceneRect)
+    ///so items dont leave any artifacts though works without it when using m_view->viewport()->repaint();
     m_view->viewport()->repaint();
     //    player.passDelta(duration);countFPS();
 
@@ -176,65 +170,91 @@ void Level1::countFPS()
 
 }
 
-
-
 std::vector<Bullet *> *Level1::getBulletContainer()
 {
+//    std::cout << termcolor::red << "&v_bullets1: " << &v_bullets << termcolor::reset<< "\n";
     return &v_bullets;
 }
 
-
-
-
-
-void Level1::checkTowersAreaPeriodicly()
+void Level1::drawBackground(QPainter *painter, const QRectF &rect)
 {
-    if(tower->checkCollisionsWithAttackArea(player)){
-        createBullet();
-    }
-
+     QPixmap p = QPixmap("E:\\Qt_workspace\\ShootingTower\\sky.png" );
+     painter->begin(&p);
+    painter->setBackground(p);
+//    painter->drawPixmap(QPoint(0,0), p,  rect);
+    painter->end();
 }
+
+
 
 float Level1::getDelta()
 {
     return duration.count();
 }
 
-void Level1::createBullet()
+QGraphicsView* Level1::getView()
 {
-    Bullet* bullet = new Bullet(this, &v_bullets, tower);
-    v_bullets.push_back(bullet);
+    return m_view;
+}
 
-
-    this->addItem(bullet); // this gives error/warning: "QGraphicsScene::addItem: item has already been added to this scene" - The usual way this happens is that when you create your QGraphicsItem you specify a parent for the item that is already in the scene. In this case there is no need to explicitly add it to the scene afterwards as the QGraphicsItem constructor does it for you if the parent is already in a scene.
-    std::cout << "void Level1::keyPressEvent(QKeyEvent *event)" << "\n";
-    bullet->estimateBulletTrajectory(tower, player);
-    bullet->setRotationTowardTarget(tower, player);
-    update(sceneRect); ///so items dont leave any artifacts though works without it when using m_view->viewport()->repaint();
-
+Player *Level1::getPlayer()
+{
+    return player;
 }
 
 
 void Level1::keyPressEvent(QKeyEvent *event)
 {
     if(event->key() == Qt::Key::Key_B){
-        createBullet();
+//        createBullet();
     }
 
     if(event->key() == Qt::Key::Key_Up || event->key() == Qt::Key::Key_Down ||
             event->key() == Qt::Key::Key_Left || event->key() == Qt::Key::Key_Right)
         player->keyPressEvent(event);
-
-
 }
+
+
+
 
 void Level1::setFPScounter()
 {
     fpsLabel = new QLabel(m_view);
-    fpsLabel->setGeometry(5,5, 60, 20); // so not only the first char appears - it must be widened
+    fpsLabel->setGeometry(5,17, 60, 20); // so not only the first char appears - it must be widened
     fpsLabel->setStyleSheet("QLabel { color : lime; font-size: 15px;}");
     fpsLabel->show();
 
     timeElapsed = std::chrono::microseconds(0);
     start = std::chrono::high_resolution_clock::now();
+}
+
+Level1::~Level1()
+{
+    std::cout << "Level1::~Level1()" << "\n";
+    player->deleteLater();
+    m_view->deleteLater();
+    delete playerPixmap;
+    playerPixmap = nullptr;
+
+//    delete playerWeapons;
+//    playerWeapons = nullptr;
+
+    delete repeller;
+    repeller = nullptr;
+
+    delete pixmapItem;
+    pixmapItem = nullptr;
+
+    delete particleSystem;
+    particleSystem = nullptr;
+
+    delete particleSystem1;
+    particleSystem1 = nullptr;
+
+    delete particleSystem2;
+    particleSystem2 = nullptr;
+
+    delete fireParticleSystem;
+    fireParticleSystem = nullptr;
+
 }

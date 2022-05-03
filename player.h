@@ -6,11 +6,15 @@
 #include <QGraphicsItem>
 #include <QGraphicsPixmapItem>
 #include <QPixmap>
-class Player: public QGraphicsPixmapItem
+#include "playerweapons.h"
+#include "playerdefences.h"
+#include "ally.h"
+class Player: public QGraphicsPixmapItem, public QObject, public Ally
 {
 
 public:
-    explicit Player(QPixmap* pixmap/*, QObject *parent = nullptr*/);
+    explicit Player(QPixmap* pixmap = nullptr, QObject *parent = nullptr);
+    ~Player();
 protected:
     void advance(int step) override;
     void keyPressEvent(QKeyEvent* event) override;
@@ -34,29 +38,29 @@ private:
 //    void addToAcceleration(QVector2D desiredAcc_ = {0,0});
 
 
-    float moveX;
-    float moveY;
+    float moveX =0.f;
+    float moveY =0.f;
     QVector2D desiredAcc;
-        float speed;
+    float speed =0.f;
     void addToAcceleration();
     void reduceVelX();
     void reduceVelY();
     void rotateAccordingToDirection();
     double normalize_angle( const double value );
 
-    bool slowRotationDown();
     float map2Ranges(float value, float minVel, float maxVel, float minSpeed, float maxSpeed);
 private:
 
     QColor color;
-    bool is_moving_left ;
-    bool is_moving_right;
-    bool is_moving_up   ;
-    bool is_moving_down ;
+    bool is_moving_left = false;
+    bool is_moving_right = false;
+    bool is_moving_up    = false;
+    bool is_moving_down  = false;
     float d; //delta
     int frameCounter =0;
-    float s;
-
+    float s =0.f;
+    float dumpingSpeed =0.f;
+    float prevAngle =0.f;
     QRectF rect;
 
     QPainter* m_painter = nullptr;
@@ -78,16 +82,18 @@ private:
     QPixmap* m_pixmap;
 
 
-    QVector2D pos;
+    QVector2D loc;
     QVector2D vel;
     QVector2D acc;
 
     float smoothAccY =0;
     float smoothAccX =0;
+    QPointF desiredBulletPos = {0,0};
 
-
+    PlayerDefences* playerDefences = nullptr;
+    PlayerWeapons* playerWeapons = nullptr;
     friend class Level1;
-
+    friend class PlayerWeapons;
 signals:
 
 };

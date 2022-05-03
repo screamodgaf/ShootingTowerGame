@@ -16,49 +16,54 @@
 #include "Particles/particlesystem.h"
 #include "Particles/fireparticlesystem.h"
 #include "Particles/repeller.h"
-
+#include "playerweapons.h"
+#include "bulletshooting.h"
 class Level1 : public QGraphicsScene
 {
     Q_OBJECT
 public:
     explicit Level1();
+    ~Level1();
     virtual void keyPressEvent(QKeyEvent *event);
     void setFPScounter();
     void countFPS();
-
     static std::vector<Bullet*> *getBulletContainer();
-
-
+    void drawBackground(QPainter *painter, const QRectF &rect);
 public slots:
     void advance();
-    void checkTowersAreaPeriodicly();
     static float getDelta();
+    static QGraphicsView *getView();
+    static Player *getPlayer();
     //    void update(const QRectF &rect = QRectF());
 signals:
 private:
     void createBullet();
 private:
-    QGraphicsView* m_view;
-    Tower* tower;
-    Player* player;
-
+    static QGraphicsView* m_view;
+    Tower* tower = nullptr;
+    static Player* player;
+ QProgressBar* b = nullptr;
 
     QRectF sceneRect;
-    static  std::vector<Bullet*> v_bullets;
-    QLabel* fpsLabel;
+
+    QLabel* fpsLabel = nullptr;
     std::chrono::time_point<std::chrono::high_resolution_clock> start, end ;
     static std::chrono::duration<float> duration, timeElapsed;
+    static std::vector<Bullet*> v_bullets; //main bulelt container - there is only one container with bullets
 
+//    PlayerWeapons* playerWeapons = nullptr;
+    BulletShooting* bulletShooting = nullptr;
 
-    QGraphicsPixmapItem* pixmapItem;
-    ParticleSystem* particleSystem;
-    ParticleSystem* particleSystem1;
-    ParticleSystem* particleSystem2;
-    FireParticleSystem* fireParticleSystem;
+    QGraphicsPixmapItem* pixmapItem = nullptr;
+    ParticleSystem* particleSystem = nullptr;
+    ParticleSystem* particleSystem1 = nullptr;
+    ParticleSystem* particleSystem2 = nullptr;
+    FireParticleSystem* fireParticleSystem = nullptr;
     std::vector<ParticleSystem*> v_particleSystem;
-
-    QVector2D gravity;
-    Repeller* repeller;
+    QPixmap* playerPixmap = nullptr;
+    QVector2D gravity = {0.f,0.f};
+    Repeller* repeller = nullptr;
+    QPainter* painter;
 };
 
 #endif // LEVEL1_H

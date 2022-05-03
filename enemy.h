@@ -4,17 +4,14 @@
 #include <QObject>
 #include <QPainter>
 
-class Enemy : public QObject, public QGraphicsItem
+class Enemy
 {
-    Q_OBJECT
+
 public:
-    explicit Enemy(QObject *parent = nullptr);
-    QRectF boundingRect() const override;
-    void advance(int phase) override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
-signals:
+    explicit Enemy(/*QObject *parent = nullptr*/);
+
 private:
-    QRectF rect;
+
 
 };
 

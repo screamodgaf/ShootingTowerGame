@@ -7,16 +7,16 @@
 class ParticleSystem
 {
 public:
-    ParticleSystem(QGraphicsScene *scene, QPixmap* pixmap, QPointF &origin);
+    ParticleSystem(QPixmap* pixmap, QPointF &origin);
+    virtual ~ParticleSystem();
     void run();
     virtual void addParticle();
     void applyForce(QVector2D& force);
     void applyReppeler(Repeller *repeller);
 protected:
-    QGraphicsScene *m_scene;
-    QPointF  m_origin;
+    QPointF m_origin;
     std::vector<Particle*> v_particles;
-    QPixmap* m_pixmap;
+    QPixmap* m_pixmap = nullptr;
 
 };
 
