@@ -9,17 +9,20 @@
 #include "playerweapons.h"
 #include "playerdefences.h"
 #include "ally.h"
-class Player: public QGraphicsPixmapItem, public QObject, public Ally
+#include "loadresources.h"
+class Level1;
+class Player: public QGraphicsPixmapItem, public Ally
 {
 
 public:
-    explicit Player(QPixmap* pixmap = nullptr, QObject *parent = nullptr);
+    explicit Player(Level1 *scene, std::vector<Bullet*>* v_bullets);
     ~Player();
+
 protected:
     void advance(int step) override;
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
-
+    QVector2D getVel() const;
     virtual QRectF boundingRect() const override; //pure virtual public function - When writing a custom graphics item, you must implement QGraphicsItem's two pure virtual public functions: boundingRect(), which returns an estimate of the area painted by the item, and paint(), which implements the actual painting. In addition, we reimplement the shape() and advance().
 
     virtual void 	paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override; //pure virtual public function
@@ -31,40 +34,38 @@ protected:
     virtual QPainterPath 	opaqueArea() const override;
     virtual int 	type() const override;
 
-    //    void update(const QRectF &rect = QRectF());
+
 private:
-    void checkCollisions();
 
-//    void addToAcceleration(QVector2D desiredAcc_ = {0,0});
-
-
-    float moveX =0.f;
-    float moveY =0.f;
-    QVector2D desiredAcc;
-    float speed =0.f;
     void addToAcceleration();
     void reduceVelX();
     void reduceVelY();
     void rotateAccordingToDirection();
-    double normalize_angle( const double value );
+    float normalize_angle( const float value );
 
     float map2Ranges(float value, float minVel, float maxVel, float minSpeed, float maxSpeed);
 private:
-
+    Level1* m_scene = nullptr;
+    QImage* playerImage = nullptr;
+    std::vector<Bullet*>* m_v_bullets = nullptr;
     QColor color;
     bool is_moving_left = false;
     bool is_moving_right = false;
     bool is_moving_up    = false;
     bool is_moving_down  = false;
     float d; //delta
-    int frameCounter =0;
+    float frameCounter =0;
     float s =0.f;
     float dumpingSpeed =0.f;
     float prevAngle =0.f;
     QRectF rect;
-
+    LoadResources loadResources;
     QPainter* m_painter = nullptr;
 
+    float moveX =0.f;
+    float moveY =0.f;
+    QVector2D desiredAcc;
+    float speed =0.f;
 
     std::vector<QGraphicsItem*> v_itemsInCollisionWithPlayer;
 
@@ -86,9 +87,11 @@ private:
     QVector2D vel;
     QVector2D acc;
 
-    float smoothAccY =0;
-    float smoothAccX =0;
-    QPointF desiredBulletPos = {0,0};
+
+
+    float smoothAccY =0.f;
+    float smoothAccX =0.f;
+    QPointF desiredBulletPos = {0.f,0.f};
 
     PlayerDefences* playerDefences = nullptr;
     PlayerWeapons* playerWeapons = nullptr;

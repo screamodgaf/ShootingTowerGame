@@ -3,7 +3,7 @@
 #include <QDebug>
 #include <QPixmap>
 #include "game.h"
-ParticleSystem::ParticleSystem(QPixmap *pixmap, QPointF& origin): m_origin(origin), m_pixmap(pixmap)
+ParticleSystem::ParticleSystem(Level1 *scene, QPixmap *pixmap, QPointF& origin, std::vector<ParticleSystem *> *v_particleSystem): m_scene{scene}, m_origin{&origin}, m_pixmap{pixmap}, m_v_particleSystem{   v_particleSystem}
 {
     qDebug() << "m_origin in ParticleSystem: " << m_origin;
 }
@@ -16,7 +16,7 @@ void ParticleSystem::run()
         i->update();
         if(i->is_finished())
         {
-            Game::getScene()->removeItem(i);
+            m_scene->removeItem(i);
             delete i;
             i = nullptr;
             v_particles.erase(std::remove(v_particles.begin(), v_particles.end(),
@@ -30,8 +30,8 @@ void ParticleSystem::addParticle()
 {
     for (int i = 0; i < 1; ++i) {
 //        if(v_particles.size()>60 ) return;
-        Particle* particle = new Particle(m_pixmap, m_origin);
-        Game::getScene()->addItem(particle);
+        Particle* particle = new Particle(m_pixmap, *m_origin, m_scene);
+        m_scene->addItem(particle);
         v_particles.push_back(particle);
 
     }
@@ -58,10 +58,17 @@ void ParticleSystem::applyReppeler(Repeller* repeller)
     }
 }
 
+void ParticleSystem::setPosition(QPointF& pos_)
+{
+    m_origin = &pos_;
+
+}
+
 
 ParticleSystem::~ParticleSystem()
 {
-    std::cout << "ParticleSystem::~ParticleSystem()" << "\n";
+    std::cout << "~ParticleSystem() start: " << "\n";
     delete m_pixmap;
     m_pixmap = nullptr;
+    std::cout << "~ParticleSystem() end" << "\n";
 }

@@ -2,17 +2,17 @@
 #include <QPen>
 #include <QPainter>
 #include <ctime>
-#include <iostream>
 #include <QPixmap>
 #include <QGraphicsScene>
 #include "level1.h"
-Particle::Particle(QPixmap *pixmap, QPointF &origin): m_origin(origin), m_pixmap(pixmap)
+#include <iostream>
+Particle::Particle(QPixmap *pixmap, QPointF &origin, Level1 *scene): m_origin{&origin}, m_pixmap{pixmap}, m_scene{scene}
 {
 
     //    rect.setSize(QSizeF(40,40));
 
     //generate random float:
-
+    this->setTransformOriginPoint(this->boundingRect().center());
     float min = -1;
     float max = 1;
     float r = min + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(max-min)));
@@ -20,7 +20,7 @@ Particle::Particle(QPixmap *pixmap, QPointF &origin): m_origin(origin), m_pixmap
 
     vel = {r, r1 };
     //    acc = {0, 0.02};
-    pos = {(float)m_origin.x(), (float)m_origin.y()};
+    pos = {(float)m_origin->x(), (float)m_origin->y()};
     this->setPos(pos.x(), pos.y());
     //rect.setSize(QSizeF(std::abs(r *60), std::abs(r *60)));
     lifespan = 1;
@@ -44,7 +44,7 @@ Particle::Particle(QPixmap *pixmap, QPointF &origin): m_origin(origin), m_pixmap
 
 void Particle::update()
 {
-
+    d = m_scene->getDelta();
     if(lifespan>=0)
         this->setOpacity(lifespan); ///qreal alpha is specified in the range 0.0-1.0.
 
@@ -96,11 +96,15 @@ bool Particle::is_finished()
 void Particle::applyForce(QVector2D &force)
 {
         float speed = 20.f;
-        d = Level1::getDelta();
         acc *= speed*  d;
 
     //qDebug() << acc;
-    acc+= force;
+        acc+= force;
+}
+
+void Particle::setPosition(QPointF pos_)
+{
+    std::cout << "pos" << "\n";
 }
 
 void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)

@@ -1,5 +1,5 @@
 QT       += core gui
-
+QT += openglwidgets
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17, console
@@ -17,11 +17,11 @@ SOURCES += \
     Particles/repeller.cpp \
     ally.cpp \
     bullet.cpp \
-    bulletshooting.cpp \
     enemy.cpp \
     enemyship.cpp \
     game.cpp \
     level1.cpp \
+    loadresources.cpp \
     main.cpp \
     player.cpp \
     playerdefences.cpp \
@@ -38,11 +38,11 @@ HEADERS += \
     Particles/repeller.h \
     ally.h \
     bullet.h \
-    bulletshooting.h \
     enemy.h \
     enemyship.h \
     game.h \
     level1.h \
+    loadresources.h \
     player.h \
     playerdefences.h \
     playerweapons.h \
@@ -66,7 +66,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 
 
-unix|win32: LIBS += -L$$PWD/../../Boost/boost_1_79_0/stage/lib/ -llibboost_stacktrace_windbg-mgw11-mt-d-x64-1_79.dll
+#unix|win32: LIBS += -L$$PWD/../../Boost/boost_1_79_0/stage/lib/ -llibboost_stacktrace_windbg-mgw11-mt-d-x64-1_79.dll
 
-INCLUDEPATH += $$PWD/../../Boost/boost_1_79_0
-DEPENDPATH += $$PWD/../../Boost/boost_1_79_0
+#INCLUDEPATH += $$PWD/../../Boost/boost_1_79_0
+#DEPENDPATH += $$PWD/../../Boost/boost_1_79_0

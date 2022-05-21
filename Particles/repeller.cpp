@@ -3,7 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <QObject>
-Repeller::Repeller(QGraphicsItem *parent, QVector2D *position): QGraphicsItem{parent},
+Repeller::Repeller(QVector2D *position, QGraphicsItem *parent): QGraphicsItem{parent},
     m_parent(parent)
 {
 //    rect.setSize(QSizeF(40,40));

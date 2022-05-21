@@ -9,12 +9,16 @@
 #include "termcolor.hpp"
 #include "game.h"
 
-Player::Player(QPixmap *pixmap, QObject *parent): QObject{parent}, color(Qt::green),
-    m_pixmap(pixmap)
+Player::Player(Level1 *scene, std::vector<Bullet *> *v_bullets): m_scene{scene},
+    m_v_bullets{v_bullets}, color{Qt::green}
 {
-    loc = {100.f,300.f};
-    vel = {0.f,0.f};
-    acc = {0.f,0.f};
+    qDebug() << "Player ctor";
+
+    loc = {100.f ,300.f };
+    vel = {0.f ,0.f };
+    acc = {0.f ,0.f };
+
+
     this->setPos(loc.x(), loc.y());
 
     is_moving_left  = false;
@@ -23,20 +27,38 @@ Player::Player(QPixmap *pixmap, QObject *parent): QObject{parent}, color(Qt::gre
     is_moving_down  = false;
 
     prevAngle = rotation();
-    if(m_pixmap == nullptr)
-        std::cout << "Player::Player pixmap == nullptr" << "\n";
-    *m_pixmap = m_pixmap->scaled(56,100);
-//        this->setOffset(this->x()  , this->y()+ 50);
+
+    playerImage = loadResources.getPlayerImage();
+
+    if(playerImage == nullptr)
+        std::cout << "Player::Player image == nullptr" << "\n";
+    qDebug() << playerImage;
+    *playerImage = playerImage->convertToFormat(QImage::Format_ARGB32_Premultiplied/* ,Qt::ColorOnly*/);
+    *playerImage = playerImage->scaled(56,110);
+
+
+
+
+    //    if(m_pixmap == nullptr)
+    //        std::cout << "Player::Player pixmap == nullptr" << "\n";
+    //    *m_pixmap = m_pixmap->scaled(56,110);
+
+
+
+    //        this->setOffset(this->x()  , this->y()+ 50);
     this->setTransformationMode(Qt::SmoothTransformation);
 
-    rect = pixmap->rect();
-//    rect.setSize(QSize(56,100));
-    this->setTransformOriginPoint(this->boundingRect().center());
-    desiredBulletPos = {0 + this->boundingRect().width()/2,  0 };
 
-    playerWeapons = new PlayerWeapons(this, desiredBulletPos);
-//    Game::getScene()->addItem(playerWeapons);
-    playerDefences = new PlayerDefences(this);
+
+
+    rect = playerImage->rect();
+    //    rect.setSize(QSize(56,100));
+    this->setTransformOriginPoint(this->boundingRect().center());
+    desiredBulletPos = {0.f + this->boundingRect().width()/2,  0.f };
+
+    playerWeapons = new PlayerWeapons(m_scene, desiredBulletPos, m_v_bullets, this, this);
+    //    Game::getScene()->addItem(playerWeapons);
+    playerDefences = new PlayerDefences(m_scene, this, m_v_bullets);
 }
 
 QRectF Player::boundingRect() const
@@ -46,22 +68,33 @@ QRectF Player::boundingRect() const
 
 void Player::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    painter->drawPixmap( 0,0, *m_pixmap);
-    painter->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, true);
+    //    painter->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform |        QPainter::VerticalSubpixelPositioning, true);
+    //    painter->drawPixmap(0.f,0.f, *m_pixmap);
+//    painter->setRenderHints(QPainter::VerticalSubpixelPositioning, true);
+    painter->setRenderHint(QPainter::Antialiasing, true);
+//    painter->setRenderHint(QPainter::VerticalSubpixelPositioning, true);
+    painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
+    painter->setRenderHint(QPainter::TextAntialiasing, true);
+    painter->drawImage(0,0, *playerImage);
+
+
+
+
+
     //painter.setCompositionMode(QPainter::CompositionMode_DestinationOver);
     //pix.setCompositionMode(QPainter::CompositionMode_Plus);
     //     painter->fillRect(m_pixmap->rect(), QColor(110, 110, 110,  140)); // colorize the light in
 
-//    qDebug() << "pos: " << this->pos();
-//    painter->setPen(QPen(Qt::blue , 25));
-//    painter->drawPoint(desiredBulletPos); /// {0 + this->boundingRect().width()/2, 0 }
+    //    qDebug() << "pos: " << this->pos();
+    //    painter->setPen(QPen(Qt::blue , 25));
+    //    painter->drawPoint(desiredBulletPos); /// {0 + this->boundingRect().width()/2, 0 }
 
 }
 
 QPainterPath Player::shape() const
 {
     QPainterPath path;
-    path.addRect(m_pixmap->rect());
+    path.addRect(playerImage->rect());
     return path;
 }
 
@@ -72,17 +105,19 @@ void Player::applyForce(QVector2D force)
 
 void Player::advance(int step)
 {
-    float speed = 210*d;
-    d  = Level1::getDelta();
+    d = m_scene->getDelta();
+    float speed = 210.f *d;
     addToAcceleration( );
+    //    speed =0.2;
     vel += acc;
     loc += vel;
 
+    //                std::cout << loc.x() << " " << loc.y() << "\n";
     this->setPos(loc.x(), loc.y());
-    acc = {0,0};
+
+    acc = {0.f,0.f};
 
     //limit velocity if its too large
-
 
     if(vel.x()>speed) vel.setX(speed);
     else if(vel.x()<-speed) vel.setX(-speed);
@@ -94,16 +129,17 @@ void Player::advance(int step)
 
     //    checkCollisions();
 
-//    playerDefences->checkCollisions(this);
+    //    playerDefences->checkCollisions(this);
 
     playerDefences->checkCollisions(this); //check which items this player ocllides
     playerWeapons->advance(1);
     rotateAccordingToDirection();
+//    std::cout << termcolor::red << "vel.x: " << vel.x() << " vel.y: " << vel.y() << termcolor::reset<< "\n";
 }
 
 void Player::keyReleaseEvent(QKeyEvent *event)
 {
-    desiredAcc = {0,0};
+    desiredAcc = {0.f,0.f};
     switch(event->key())  {
     case Qt::Key_Left :
         is_moving_left = false;
@@ -118,6 +154,12 @@ void Player::keyReleaseEvent(QKeyEvent *event)
         is_moving_down = false;
         break;
     }
+    update();
+}
+
+QVector2D Player::getVel() const
+{
+    return vel;
 }
 
 //float Player::map2Ranges(float value, float minVel, float maxVel, float minSpeed, float maxSpeed)
@@ -131,7 +173,7 @@ void Player::keyPressEvent(QKeyEvent *event)
     //    std::cout << "220.f*d: " << 220.f*d<< "\n";
     //    if(std::abs(vel.x()) <2) speed=speed/2;
     //    if(std::abs(vel.y()) <2) speed=speed/2;
-
+    d = m_scene->getDelta();
     float speedX = 320.f*d;
     float speedY = 320.f*d;
     //    if(std::abs(vel.x()) < speed*d/15 || std::abs(vel.y()) < speed*d/15) speed*=0.5;
@@ -140,14 +182,13 @@ void Player::keyPressEvent(QKeyEvent *event)
     //    speedX = map2Ranges(vel.x(), -220.f*d *1.5 , 220.f*d *1.5, 0.1, 220 ) * d;
     //    speedY = map2Ranges(vel.y(), -220.f*d *1.5, 220.f*d *1.5, 0.1, 220 ) * d;
 
-
     //every click changes
     switch(event->key())  {
     case Qt::Key_Left :  //acc.setX(-2);
         is_moving_left = true;
         moveX = -speedX;
-        moveY =0;
-        desiredAcc = {-speedX, 0};
+        moveY =0.f;
+        desiredAcc = {-speedX, 0.f};
         frameCounter=0;
         reduceVelY();          ///to reduce vel.y when left or right key is being pressed
         addToAcceleration();
@@ -155,8 +196,8 @@ void Player::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Right :  //acc.setX(2);
         is_moving_right = true;
         moveX = speedX;
-        moveY =0;
-        desiredAcc = {speedX, 0};
+        moveY =0.f;
+        desiredAcc = {speedX, 0.f};
         frameCounter=0;
         reduceVelY();           ///to reduce vel.y when left or right key is being pressed
         addToAcceleration();
@@ -164,8 +205,8 @@ void Player::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Up :    //acc.setY(-2);
         is_moving_up = true;
         moveY = -speedY;
-        moveX =0;
-        desiredAcc = {0, speedY};
+        moveX =0.f;
+        desiredAcc = {0.f, speedY};
         frameCounter=0;
         reduceVelX();         ///to reduce vel.x when up or down key is being pressed
         addToAcceleration();
@@ -173,8 +214,8 @@ void Player::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Down :      //acc.setY(2);
         is_moving_down = true;
         moveY = speedY;
-        moveX =0;
-        desiredAcc = {0, speedY};
+        moveX =0.f;
+        desiredAcc = {0.f, speedY};
         frameCounter=0;
         reduceVelX();          ///to reduce vel.x when up or down key is being pressed
         addToAcceleration();
@@ -184,26 +225,30 @@ void Player::keyPressEvent(QKeyEvent *event)
 
 void Player::addToAcceleration() //this method is called every frame
 {
-    if(std::abs(acc.x())<10*d) acc.setX(0);
-    if(std::abs(acc.y())<10*d) acc.setY(0);
-    //    if(std::abs(vel.x())<0.1*d) vel.setX(0);
-    //    if(std::abs(vel.y())<0.1*d) vel.setY(0);
+    d = m_scene->getDelta();
+    //does nothing for now
+    if(std::abs(acc.x())<10.f*d) acc.setX(0.f);
+    if(std::abs(acc.y())<10.f*d) acc.setY(0.f);
+
+
+//    if(std::abs(vel.x())<1.f*d) vel.setX(0.f);
+//    if(std::abs(vel.y())<1.f*d) vel.setY(0.f);
 
     vel += acc;
     QVector2D desiredVel = vel +  desiredAcc;
-    s = 0.3*d;
+    s = 0.3f*d;
 
     if(vel.x() == desiredVel.x() && vel.y() == desiredVel.y()){
-        moveX =0;
-        moveY =0;
-        desiredAcc = {0, 0};
+        moveX =0.f;
+        moveY =0.f;
+        desiredAcc = {0.f, 0.f};
         return;
     }
 
 
     if(vel.x()!= desiredVel.x()){
         vel.setX(vel.x()+ moveX*s);
-//        std::cout << termcolor::red << "aaaaa" << termcolor::reset<< "\n";
+        //        std::cout << termcolor::red << "aaaaa" << termcolor::reset<< "\n";
     }
     if(vel.y()!= desiredVel.y())
         vel.setY(vel.y()+ moveY*s);
@@ -217,14 +262,16 @@ void Player::addToAcceleration() //this method is called every frame
 
 void Player::reduceVelX() ///to reduce vel.x when up or down key is being pressed
 {/*return;*/
-    float s = 1*d;
+    d = m_scene->getDelta();
+
+    float s = 1.f*d;
     if(vel.x()>0){     //if
         if(vel.x() < s)
-            acc.setX(0); //-vel.x()
+            acc.setX(0 ); //-vel.x()
         else
             acc.setX(-s);
     }
-    else if(vel.x()<0){
+    else if(vel.x()<0 ){
         if(vel.x() > s)
             acc.setX(vel.x()); //vel.x()
         else
@@ -237,18 +284,19 @@ void Player::reduceVelX() ///to reduce vel.x when up or down key is being presse
 
 void Player::reduceVelY()  //to reduce vel.y when left or right key is being pressed
 {
-    //        return;
-    float s = 1*d;
+//            return;
+    d = m_scene->getDelta();
+    float s = 1.f*d;
 
     if(vel.y()>0){
         if(vel.y() < s)
-            acc.setY(0); //-vel.y()
+            acc.setY(0.f); //-vel.y()
         else
             acc.setY(-s);
     }
     else if(vel.y()<0){
         if(vel.y() > s)
-            acc.setY(0); //vel.y()
+            acc.setY(0.f); //vel.y()
         else
             acc.setY(s);
     }
@@ -257,17 +305,17 @@ void Player::reduceVelY()  //to reduce vel.y when left or right key is being pre
     rotateAccordingToDirection();
 }
 
-double Player::normalize_angle( const double value ) {
-    double start = -180.0;
-    double end = 180.0;
-    double width = end - start   ;
-    double offsetValue = value - start ;
+float Player::normalize_angle(const float value ) {
+    float start = -180.f;
+    float end = 180.f;
+    float width = end - start   ;
+    float offsetValue = value - start ;
     return ( offsetValue - ( floor( offsetValue / width ) * width ) ) + start ;
 }
 
 float Player::map2Ranges(float value, float minVel, float maxVel, float minSpeed, float maxSpeed)
 {
-    float result = minSpeed + (maxSpeed - minSpeed) * ((value - minVel)/(maxVel - minVel));
+    double result = minSpeed + (maxSpeed - minSpeed) * ((value - minVel)/(maxVel - minVel));
     std::cout << "result: " << result << "\n";
     return result;
 }
@@ -276,7 +324,7 @@ float Player::map2Ranges(float value, float minVel, float maxVel, float minSpeed
 void Player::rotateAccordingToDirection()
 {
     //the method sets rotation and slows down rotation when the if conditions are matched:
-    float a =  std::atan2(vel.y(), vel.x())  *180/M_PI; //to degrees
+    float a =  std::atan2(vel.y(), vel.x())  *180.f/M_PI; //to degrees
     a = normalize_angle(a);
     prevAngle = normalize_angle(prevAngle);
     //    std::cout << "a - prevAngle: " << normalize_angle(a - prevAngle)  << "\n";
@@ -290,21 +338,21 @@ void Player::rotateAccordingToDirection()
     //    else if(angleDiff < 0 && angleDiff  >= -180 )
     //        a = prevAngle-5.f;
 
-    float angleChange = 150*d; //by frame
+    float angleChange = 150.f*d; //by frame
     //    std::cout << "angleChange: " << 280*d  << "\n";
     if(angleDiff>=0 && angleDiff<angleChange )        a = prevAngle + angleDiff;
     else if(angleDiff>=angleChange && angleDiff<=180 )      a = prevAngle + angleChange ;
     else if(angleDiff<0 && angleDiff>-angleChange )           a = prevAngle + angleDiff;
     else if(angleDiff<=-angleChange && angleDiff>=-180)         a = prevAngle - angleChange ;
 
-    if(angleDiff>180. || angleDiff<-180.) qDebug() << "ERROR! nieprzeidziany zakres kata..." ;
+    if(angleDiff>180.f || angleDiff<-180.f) qDebug() << "ERROR! nieprzeidziany zakres kata..." ;
 
     // std::cout << termcolor::red << "a: " << a << termcolor::reset<< "\n";
 
     // std::cout << termcolor::green << "vel.x: " << vel.x() << termcolor::reset<< "\n";
     //  std::cout << termcolor::green << "vel.y: " << vel.y() << termcolor::reset<< "\n";
     //  std::cout << "------------------------" << "\n";
-    this->setRotation(normalize_angle(a-270));
+    this->setRotation(normalize_angle(a-270.f));
     prevAngle =a;
 }
 
@@ -313,25 +361,30 @@ void Player::rotateAccordingToDirection()
 bool Player::contains(const QPointF &point) const
 {
     std::cout << "Player::contains(const QPointF &point) const " << "\n";
+    return false;
 }
 
 bool Player::isObscuredBy(const QGraphicsItem *item) const
 {
     std::cout << "Player::isObscuredBy(const QGraphicsItem *item) const " << "\n";
+    return false;
 }
 
 QPainterPath Player::opaqueArea() const
 {
     std::cout << "QPainterPath Player::opaqueArea() const " << "\n";
+    return  QPainterPath();
 }
 
 int Player::type() const
 {
     std::cout << "int Player::type() const " << "\n";
+    return 0;
 }
 
 Player::~Player()
 {
+    std::cout << "~Player()" << "\n";
     delete playerDefences;
     playerDefences = nullptr;
 }

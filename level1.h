@@ -12,58 +12,62 @@
 #include <vector>
 #include <QLabel>
 #include <QElapsedTimer>
-
+#include <QOpenGLWidget>
 #include "Particles/particlesystem.h"
 #include "Particles/fireparticlesystem.h"
 #include "Particles/repeller.h"
 #include "playerweapons.h"
-#include "bulletshooting.h"
+#include "loadresources.h"
+
+class Game;
+
 class Level1 : public QGraphicsScene
 {
-    Q_OBJECT
 public:
     explicit Level1();
     ~Level1();
     virtual void keyPressEvent(QKeyEvent *event);
     void setFPScounter();
     void countFPS();
-    static std::vector<Bullet*> *getBulletContainer();
-    void drawBackground(QPainter *painter, const QRectF &rect);
+
+        float getDelta();
 public slots:
     void advance();
-    static float getDelta();
-    static QGraphicsView *getView();
-    static Player *getPlayer();
+
+
+
     //    void update(const QRectF &rect = QRectF());
 signals:
 private:
     void createBullet();
 private:
-    static QGraphicsView* m_view;
+    QGraphicsView* m_view = nullptr;
     Tower* tower = nullptr;
-    static Player* player;
+    Player* player = nullptr;
+    QElapsedTimer* timer = nullptr;
  QProgressBar* b = nullptr;
-
+     QOpenGLWidget *gl = nullptr;
     QRectF sceneRect;
 
     QLabel* fpsLabel = nullptr;
     std::chrono::time_point<std::chrono::high_resolution_clock> start, end ;
-    static std::chrono::duration<float> duration, timeElapsed;
-    static std::vector<Bullet*> v_bullets; //main bulelt container - there is only one container with bullets
+    std::chrono::duration<float> duration, timeElapsed;
+    std::vector<Bullet*> v_bullets; //main bulelt container - there is only one container with bullets
 
 //    PlayerWeapons* playerWeapons = nullptr;
-    BulletShooting* bulletShooting = nullptr;
 
+    float deltatime =0.0;
     QGraphicsPixmapItem* pixmapItem = nullptr;
-    ParticleSystem* particleSystem = nullptr;
-    ParticleSystem* particleSystem1 = nullptr;
+    ParticleSystem* bonusNebula1 = nullptr;
+    QPixmap* bonusNebulaPixmap = nullptr;
+
     ParticleSystem* particleSystem2 = nullptr;
     FireParticleSystem* fireParticleSystem = nullptr;
     std::vector<ParticleSystem*> v_particleSystem;
-    QPixmap* playerPixmap = nullptr;
     QVector2D gravity = {0.f,0.f};
     Repeller* repeller = nullptr;
     QPainter* painter;
+    LoadResources* loadResources;
 };
 
 #endif // LEVEL1_H

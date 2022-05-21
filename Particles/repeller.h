@@ -6,7 +6,7 @@
 class Repeller: public QGraphicsItem
 {
 public:
-    explicit Repeller(QGraphicsItem* parent = nullptr, QVector2D* position = nullptr);
+    explicit Repeller(QVector2D* position, QGraphicsItem* parent = nullptr);
     void update(QVector2D &position);
     QRectF boundingRect() const override;
     void advance(int phase) override;

@@ -5,37 +5,51 @@
 #include <iostream>
 #include "termcolor.hpp"
 #include "game.h"
-Bullet::Bullet(QGraphicsItem *shooter_, QGraphicsItem *target_, QPointF desiredBulletPos): target{target_},
-    shooter {shooter_}
+Bullet::Bullet(Level1* scene, QGraphicsItem *shooter_, QGraphicsItem *target_, QPointF desiredBulletPos, std::vector<ParticleSystem *> *v_particleSystem, QVector2D vel_): target{target_}, m_scene{scene} , shooter {shooter_}, m_v_particleSystem{v_particleSystem}, shootersVel{vel_}
 {
     if(shooter==nullptr || target == nullptr) return;
     std::cout << termcolor::red << "Bullet::Bullet Created: " << this << termcolor::reset<< "\n";
     rect.setSize(QSizeF(30,2 ));
     this->setTransformOriginPoint(0,boundingRect().height()/2);
     this->setPos(mapFromItem(shooter, desiredBulletPos));
+    qDebug() << "shootersVel: " << shootersVel;
 
-    vel = {0.f,0.f};
-    acc = {0.f,0.f};
+    ///adjust bullets velocity to shooters velocity:
+    d = m_scene->getDelta();
+    float speed = 187*d ;
+//    float averageVel = std::sqrt(shootersVel.x()* shootersVel.x() + shootersVel.y()* shootersVel.y());
+//    //    float scalar;
+//    float desiredVel = speed ;
+//    scalar = desiredVel/averageVel;
+//    std::cout << termcolor::on_yellow << "scalar: " << scalar << termcolor::reset<< "\n";
+////    vel*=scalar;
+    vel = shootersVel;
+    vel += acc;
+    std::cout << termcolor::on_yellow << "vel: " << vel.x() << " " << vel.y() << termcolor::reset<< "\n";
+
     loc = { static_cast<float>(this->pos().x()), static_cast<float>(this->pos().y())};
 
-    Game::getScene()->addItem(this);
+    //    std::cout << termcolor::green << "vel: " << vel.x() << " " << vel.y() << termcolor::reset<< "\n";
+
+
+    m_scene->addItem(this);
     estimateBulletTrajectory();
     setRotationTowardTarget();
-    std::cout << termcolor::on_blue << "origin: " << this->transformOriginPoint().x() << " " << this->transformOriginPoint().y() << termcolor::reset<< "\n";
+    //    std::cout << termcolor::on_blue << "origin: " << this->transformOriginPoint().x() << " " << this->transformOriginPoint().y() << termcolor::reset<< "\n";
     qDebug() << "Bullet ctor End";
 }
 
 
 void Bullet::estimateBulletTrajectory()
 {
+    if(shooter==nullptr || target == nullptr) return;
 
-    //    pen.(Qt::DashDotLine);
     pen.setColor(Qt::red);
+
     shooterWidth = shooter->boundingRect().width();
     shooterHight = shooter->boundingRect().height();
     targetWidth = target->boundingRect().width();
     targetHight = target->boundingRect().height();
-
 
     ///draws line from tower CENTRE (+targetWidth/2 for centering) to target's CENTRE:
     //setting QLineF:
@@ -57,16 +71,10 @@ void Bullet::estimateBulletTrajectory()
     acc.setY((target->y() + targetHight/2) - (shooter->y() + shooterHight/2));
 
     acc.normalize();
-
-
-
-    //bulletPen = new QPen;
-
-
 }
+
 void Bullet::setRotationTowardTarget()
 {
-
     QVector2D distBetweenPoints((target->x() + targetWidth/2) - (shooter->x() + shooterWidth/2),  /// +orginWidth/2 so bullet wont lose trajectory
                                 (target->y() + targetHight/2) - (shooter->y() + shooterHight/2));
 
@@ -84,28 +92,23 @@ void Bullet::update()
     //    this->setY(distanceFromCentre * std::sin(angleRad) + shooter->pos().y() + shooter->boundingRect().height()/2);
     //    this->setRotation(shooter->rotation());
     //    return;
-
+    d = m_scene->getDelta();
 
     //    std::cout << "Bullet::update()" << "\n";
     //    std::cout << termcolor::green <<"Bullet::update()" << termcolor::reset<< "\n";
-    float speed = 50.f;
 
-    d = Level1::getDelta();
 
-    acc *= speed*  d;
+    //    float speed = 50.f *  d;
+    //    float averageVel = std::sqrt(shootersVel.x()* shootersVel.x() + shootersVel.y()* shootersVel.y());
+    //    float scalar;
+    //    float desiredVel = speed ;
+    //    scalar = desiredVel/averageVel;
+    //    acc*=scalar;
+
     vel += acc;
     loc += vel;
-
-    //limit velocity if its too large
-    //    if( abs(vel.x()) > 20){
-    //        vel.setX(vel.x()/2);
-    //        vel.setY(vel.y()/2);
-    //    }
-    //    qDebug() << "loc: " << loc << " "  ;
-
     this->setPos(loc.x(), loc.y());
     acc = {0,0};
-
 
 }
 
@@ -133,28 +136,21 @@ QPen *Bullet::getPen()
     return &bulletPen;
 }
 
-
-
-
 bool Bullet::checkBulletsDistFromShooter()
 {
-    if(shooter == nullptr) return 0;
+    if(shooter == nullptr || target == nullptr) return false;
 
     ln2.setP1(QPointF(this->x(), this->y()));
     ln2.setP2(QPointF(shooter->x() + shooterWidth/2,
                       shooter->y() + shooterHight/2));
 
-    //    std::cout << termcolor::on_red << "ln.length(): "  << ln.length() << termcolor::reset<< "\n";
-    //    std::cout << "shooter->boundingRect().width()L " << shooter->boundingRect().width() << "\n";
     if(ln2.length() >= shooter->boundingRect().width()*4){
-        if(Game::getScene())
-            Game::getScene()->removeItem(this);
-
+        if(m_scene)
+            m_scene->removeItem(this);
 
         return true;
         //        scene()->removeItem(this);
         ///remove this bullet from m_v_Bullets - container that has all Bullets inside, so we wont hit nullpointer
-
     }
     return false;
 }
@@ -178,7 +174,4 @@ Bullet::~Bullet()
 {
     std::cout << termcolor::on_red << "BULLET:Bulle destroyed ~Bullet(): " << this << termcolor::reset<< "\n";
     //    std::cout << "BULLET destroyed ~Bullet(): " << this << "\n";
-
-
-
 }

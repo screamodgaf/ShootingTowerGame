@@ -7,19 +7,18 @@
 #include <QGraphicsItem>
 #include <QTimer>
 #include "level1.h"
+#include "loadresources.h"
 
 
-
-class Game : public QObject
+class Game
 {
-    Q_OBJECT
 public:
-    explicit Game(QObject *parent = nullptr);
-    static Level1* getScene();
+    explicit Game();
     ~Game();
 private:
-    static  Level1* m_scene1;
+    Level1* m_scene1;
     QTimer* timer = nullptr;
+
 
 signals:
 

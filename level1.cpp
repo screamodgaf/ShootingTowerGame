@@ -7,125 +7,123 @@
 #include <QProgressBar>
 #include "termcolor.hpp"
 
+#include "game.h"
 
 
-Level1::Level1( )
+Level1::Level1()
 {
     std::cout << "Level1() ctor" << "\n";
-    sceneRect = QRectF(0,0,800,600); ///its needed for scene.update(rect) - to update and so items dont leave any artifacts
+    //    sceneRect = QRectF(0,0,800,600); ///its needed for scene.update(rect) - to update and so items dont leave any artifacts
+    loadResources = new LoadResources;
     this->setSceneRect(sceneRect);
 
-    m_view = new QGraphicsView(this);
+    m_view = new QGraphicsView();
+    //opengl start
+    gl = new QOpenGLWidget(m_view);
+    QSurfaceFormat format;
+    format.setProfile(QSurfaceFormat::OpenGLContextProfile::CompatibilityProfile);
+    format.setRenderableType(QSurfaceFormat::OpenGL);
+    format.setOptions(QSurfaceFormat::DeprecatedFunctions);
+    format.setDepthBufferSize(24);
+    format.setStencilBufferSize(8);
+    format.setVersion(3, 2);
+    format.setSwapBehavior(QSurfaceFormat::TripleBuffer);
+    format.setSwapInterval(1);
+    format.setSamples(4);
+    //     QSurfaceFormat::setDefaultFormat(format);
+    gl->setFormat(format);
+    m_view->setViewport(gl);
+    //opengl end
+
+
+    m_view->setScene(this);
     m_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_view->setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "game"));
     m_view->resize(800, 600);
-    m_view->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    m_view->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform  | QPainter::LosslessImageRendering | QPainter::TextAntialiasing);
     m_view->setViewportUpdateMode(QGraphicsView::NoViewportUpdate );
+    m_view->setCacheMode(QGraphicsView::CacheBackground);
 
-    painter = new QPainter();
+    m_view->updateGeometry();
+    //    painter = new QPainter();
 
 
-
-
-    m_view->setScene(this);
-//b  = new QProgressBar(m_view);
     // a blue background
-    m_view->setBackgroundBrush(Qt::black);
+    //    m_view->setBackgroundBrush(Qt::black);
+    m_view->setBackgroundBrush(QPixmap("F:\\Qt_workspace\\ShootingTower\\sky.png"));
     m_view->show();
+    //        m_view->showFullScreen();
 
-    //create items:
-    tower = new Tower(this);
-    //    enemy = new Enemy;
-
-    //create player:
-    playerPixmap = new QPixmap("E:\\Qt_workspace\\ShootingTower\\ship1.png");
-    //   *playerPixmap = playerPixmap->scaled(QSize(40,40 ));
-
-    player = new Player(playerPixmap, this);
-    player->setFlag(QGraphicsItem::ItemIsFocusable); ///only one item can respond to keyboard events
-    player->setFocus();
-    //create targetting area for player:
-//    playerWeapons = new PlayerWeapons(player);
-
-    //create bullet shooting control:
-    bulletShooting = new BulletShooting(this);
-
-    // player->setPos(player->mapToScene(30,500));
-    //add to Scene
-    this->addItem(tower);
-    this->addItem(player);
-//    this->addItem(playerWeapons);
     //set FPS counter stuff:
     setFPScounter();
 
-    //load qPixmap:
-    QPixmap* pixmap1 = new QPixmap("E:\\Qt_workspace\\ShootingTower\\smoke4.png");
-    *pixmap1 = pixmap1->scaled(QSize(140,140 ));
-
-
-    //create particles:
-    QPointF origin1 = {100, 100};
-    particleSystem = new ParticleSystem(pixmap1, origin1);
-    v_particleSystem.push_back(particleSystem);
-
-    ///add another particle system:
-    QPixmap* pixmap2 = new QPixmap("E:\\Qt_workspace\\ShootingTower\\light.png");
-    *pixmap2 = pixmap2->scaled(QSize(140,140 ));
-
-
-    //pixmap2->setDevicePixelRatio(0.1);
-    //create particles:
-    QPointF origin2 = {350, 100};
-    //    QPainter pix2(pixmap2);
-    //    pix2.fillRect(pixmap2->rect(), QColor(100, 30, 30, 128));
-    //    pix2.setCompositionMode(QPainter::CompositionMode_Overlay);
-
-    //    pix2.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, true);
-
-
-    //    QPixmap* pixmap3 = new QPixmap("E:\\Qt_workspace\\ShootingTower\\5.png");
-
-    //    pix2.drawPixmap(pixmap2->rect(), *pixmap2, pixmap3->rect());
-
-    particleSystem2 = new ParticleSystem(pixmap2, origin2);
-    v_particleSystem.push_back(particleSystem2);
-
     //set gravity:
-    gravity = {0,0.1};
+    gravity = {0.f,0.1f};
 
     //initialize repeller:
     //    QVector2D rpos(170, 300);
     //    repeller = new Repeller(nullptr, &rpos);
-    repeller = new Repeller(player, nullptr);
-    this->addItem(repeller);
+
+    m_view->setSceneRect(0,0,100000000,100000000);
+
+    //CREATE ITEMS:
+    tower = new Tower(this, &v_bullets, &v_particleSystem);
+    addItem(tower);
+
+    //    playerPixmap = new QPixmap("E:\\Qt_workspace\\ShootingTower\\ship1.png");
+
+    player = new Player(this,/* playerPixmap, */&v_bullets);
+    player->setFlag(QGraphicsItem::ItemIsFocusable); ///only one item can respond to keyboard events
+    player->setFocus();
+    addItem(player);
+
+    timer = new QElapsedTimer;
+
+    repeller = new Repeller(nullptr, player);
+    addItem(repeller);
+    std::cout << "Level1 ctor end" << "\n";
 }
 
 
 void Level1::advance()
 {
-//    drawBackground(painter, sceneRect);
+
 
     countFPS();
-    tower->advance(1);
-    player->advance(1);
-//    playerWeapons->advance(1); ///its outside player, cause if it was inside Player class, than would be of type Player, and would extand the player;s collision area
+
+    //tower->moveBy(2,0);
+    if(player)
+        player->advance(1);
+    if(tower)
+        tower->advance(1);
+    if(m_view)
+        m_view->centerOn(player);
+
+    //    m_view->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+    //    m_view->translate(player->x() + player->boundingRect().center().x(),
+    //                 player->y() + player->boundingRect().center().y()
+    //                 );
+
+
+    //m_view-> translate(player->x(), player->y());
+    //    mScene->setX(int(-(pos.x() - width() / 2)));
+    //    mScene->setY(int(-(pos.y() - height() / 2)));
+    //    playerWeapons->advance(1); ///its outside player, cause if it was inside Player class, than would be of type Player, and would extand the player;s collision area
     //    QVector2D playerPos(player->pos().x(), player->pos().y());
     //    repeller->update(playerPos);
 
-//TODO
-        for (int i = 0; i < v_bullets.size(); ++i) {
-            if(v_bullets[i]->checkBulletsDistFromShooter()){ //if certain bullet is too far the shooter - erase:
-
-                delete v_bullets[i];
-                v_bullets[i] = nullptr;
-
-                 v_bullets.erase(std::remove(v_bullets.begin(), v_bullets.end(), v_bullets[i]), v_bullets.end());
-
-                continue;
-            }
-            v_bullets[i]->update();
+    //TODO
+    for (int i = 0; i < v_bullets.size(); ++i) {
+        if(v_bullets[i]!= nullptr && v_bullets[i]->checkBulletsDistFromShooter()){ //if certain bullet is too far the shooter - erase:
+            //            v_bullets[i]->deleteLater();
+            delete v_bullets[i] ;
+            v_bullets[i] = nullptr;
+            v_bullets.erase(std::remove(v_bullets.begin(), v_bullets.end(), v_bullets[i]), v_bullets.end());
+            continue;
         }
+        v_bullets[i]->update();
+    }
 
 
     for (size_t i = 0; i < v_particleSystem.size(); ++i) {
@@ -144,17 +142,55 @@ void Level1::advance()
 
 
 
-    //    update(sceneRect)
+    if(tower && tower->checkTowerLifeandPos().first ==0){
+        bonusNebulaPixmap = loadResources->getBonusNebula1Pixmap();
+        *bonusNebulaPixmap = bonusNebulaPixmap->scaled(QSize(140,140 ));
+
+        QPointF origin = tower->checkTowerLifeandPos().second;
+        bonusNebula1 = new ParticleSystem(this, bonusNebulaPixmap, origin, &v_particleSystem);
+        v_particleSystem.push_back(bonusNebula1);
+
+
+        this->removeItem(tower);
+        delete tower  ;
+        tower = nullptr;
+
+
+
+        for (int i = 0; i < v_bullets.size(); ++i) {
+
+            this->removeItem(v_bullets.at(i));
+            std::cout << "44" << "\n";
+            //                getBulletContainer()->erase(std::remove(getBulletContainer()->begin(),
+            //                                                        getBulletContainer()->end(), getBulletContainer()->at(i)), getBulletContainer()->end());
+            //                     getBulletContainer()->at(i)->deleteLater();
+
+        }
+        v_bullets.clear();
+    }
+
+
+
+    //        update(sceneRect);
     ///so items dont leave any artifacts though works without it when using m_view->viewport()->repaint();
-    m_view->viewport()->repaint();
+    update();
+
+    //        m_view->viewport()->repaint();
     //    player.passDelta(duration);countFPS();
 
+}
+
+float Level1::getDelta()
+{
+    //    deltatime = 0.016;
+    return deltatime;
 }
 
 
 
 void Level1::countFPS()
 {
+    //klatki?
     end = std::chrono::high_resolution_clock::now();
     duration = end - start;
     start = std::chrono::high_resolution_clock::now();
@@ -163,50 +199,39 @@ void Level1::countFPS()
 
     ///if framerate is faster than 0.016 - wait untill it reaches 0.0163463 by entering while loop; "duration" in the the while loops condition insreases every iteration of the while iteration by the time the while iteration takes
     auto tstart = std::chrono::high_resolution_clock::now();  ///10
-    while (duration.count() <  0.016) {   ///60 fps = 16 miliseconds cause 60*16 = 1000 so 0,016  sec = 16 miliseconds
+    //    std::cout << "duration.count(): " << duration.count() << "\n";
+    while (duration.count() <  0.017 ) {   ///60 fps = 16 miliseconds cause 60*16 = 1000 so 0,016  sec = 16 miliseconds
         auto tend = std::chrono::high_resolution_clock::now(); ///20
         duration += tend-tstart; ///20 - 10 = 10 so while iteration took 10 | then we add the while iteration duration to framerate duration
+
     }
-
+    deltatime = duration.count();
+    //     std::cout << "deltatime: " << deltatime << "\n";
 }
 
-std::vector<Bullet *> *Level1::getBulletContainer()
-{
-//    std::cout << termcolor::red << "&v_bullets1: " << &v_bullets << termcolor::reset<< "\n";
-    return &v_bullets;
-}
-
-void Level1::drawBackground(QPainter *painter, const QRectF &rect)
-{
-     QPixmap p = QPixmap("E:\\Qt_workspace\\ShootingTower\\sky.png" );
-     painter->begin(&p);
-    painter->setBackground(p);
-//    painter->drawPixmap(QPoint(0,0), p,  rect);
-    painter->end();
-}
+//void Level1::countFPS()
+//{
+//    //klatki?
+//    timer->start();
 
 
+//   qint64 duration =  timer->elapsed();
+//   fpsLabel->setText("FPS: " + QString::number(int(1/duration)));
+//    while (duration <  0.015) {   ///60 fps = 16 miliseconds cause 60*16 = 1000 so 0,016  sec = 16 miliseconds
 
-float Level1::getDelta()
-{
-    return duration.count();
-}
+//    }
+//    deltatime = duration;
+//    // std::cout << "deltatime: " << deltatime << "\n";
+//}
 
-QGraphicsView* Level1::getView()
-{
-    return m_view;
-}
 
-Player *Level1::getPlayer()
-{
-    return player;
-}
+
 
 
 void Level1::keyPressEvent(QKeyEvent *event)
 {
     if(event->key() == Qt::Key::Key_B){
-//        createBullet();
+        //        createBullet();
     }
 
     if(event->key() == Qt::Key::Key_Up || event->key() == Qt::Key::Key_Down ||
@@ -230,31 +255,35 @@ void Level1::setFPScounter()
 
 Level1::~Level1()
 {
-    std::cout << "Level1::~Level1()" << "\n";
-    player->deleteLater();
-    m_view->deleteLater();
-    delete playerPixmap;
-    playerPixmap = nullptr;
+    std::cout << " ~Level1() start" << "\n";
+    //    delete player;
+    //    player = nullptr;
 
-//    delete playerWeapons;
-//    playerWeapons = nullptr;
+    m_view->setViewport(nullptr);
+
+    delete tower;
+    tower = nullptr;
 
     delete repeller;
     repeller = nullptr;
-
-    delete pixmapItem;
-    pixmapItem = nullptr;
-
-    delete particleSystem;
-    particleSystem = nullptr;
-
-    delete particleSystem1;
-    particleSystem1 = nullptr;
 
     delete particleSystem2;
     particleSystem2 = nullptr;
 
     delete fireParticleSystem;
     fireParticleSystem = nullptr;
+   std::cout << " ~Level1(() end mid" << "\n";
+//    delete bonusNebula1;
+//    bonusNebula1 = nullptr;
 
+//    delete bonusNebulaPixmap;
+//    bonusNebulaPixmap = nullptr;
+
+    //    gl->deleteLater(); //was causing crash at closing window
+    //    gl = nullptr;
+
+
+    //    m_view->deleteLater();
+    //    m_view = nullptr;
+    std::cout << " ~Level1() end" << "\n";
 }
