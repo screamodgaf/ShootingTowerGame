@@ -7,9 +7,6 @@
 #include <QProgressBar>
 #include "termcolor.hpp"
 
-#include "game.h"
-
-
 Level1::Level1()
 {
     std::cout << "Level1() ctor" << "\n";
@@ -51,7 +48,7 @@ Level1::Level1()
 
     // a blue background
     //    m_view->setBackgroundBrush(Qt::black);
-    m_view->setBackgroundBrush(QPixmap("F:\\Qt_workspace\\ShootingTower\\sky.png"));
+    m_view->setBackgroundBrush(QPixmap(":/resources/Resources/sky.png"));
     m_view->show();
     //        m_view->showFullScreen();
 
@@ -68,17 +65,22 @@ Level1::Level1()
     m_view->setSceneRect(0,0,100000000,100000000);
 
     //CREATE ITEMS:
-    tower = new Tower(this, &v_bullets, &v_particleSystem);
-    addItem(tower);
-
-    //    playerPixmap = new QPixmap("E:\\Qt_workspace\\ShootingTower\\ship1.png");
-
     player = new Player(this,/* playerPixmap, */&v_bullets);
     player->setFlag(QGraphicsItem::ItemIsFocusable); ///only one item can respond to keyboard events
     player->setFocus();
     addItem(player);
 
+    QPixmap enemyPixmap1 = *loadResources->getEnemyPixmap1();
+    enemy = new Enemy(this, enemyPixmap1, &v_bullets, &v_particleSystem, player);
+//    addItem(tower);
+
+    //    playerPixmap = new QPixmap("E:\\Qt_workspace\\ShootingTower\\ship1.png");
+
+
+
     timer = new QElapsedTimer;
+
+
 
     repeller = new Repeller(nullptr, player);
     addItem(repeller);
@@ -95,8 +97,9 @@ void Level1::advance()
     //tower->moveBy(2,0);
     if(player)
         player->advance(1);
-    if(tower)
-        tower->advance(1);
+
+    if(enemy)
+        enemy->advance(1);
     if(m_view)
         m_view->centerOn(player);
 
@@ -104,7 +107,6 @@ void Level1::advance()
     //    m_view->translate(player->x() + player->boundingRect().center().x(),
     //                 player->y() + player->boundingRect().center().y()
     //                 );
-
 
     //m_view-> translate(player->x(), player->y());
     //    mScene->setX(int(-(pos.x() - width() / 2)));
@@ -116,7 +118,7 @@ void Level1::advance()
     //TODO
     for (int i = 0; i < v_bullets.size(); ++i) {
         if(v_bullets[i]!= nullptr && v_bullets[i]->checkBulletsDistFromShooter()){ //if certain bullet is too far the shooter - erase:
-            //            v_bullets[i]->deleteLater();
+
             delete v_bullets[i] ;
             v_bullets[i] = nullptr;
             v_bullets.erase(std::remove(v_bullets.begin(), v_bullets.end(), v_bullets[i]), v_bullets.end());
@@ -142,25 +144,32 @@ void Level1::advance()
 
 
 
-    if(tower && tower->checkTowerLifeandPos().first ==0){
+    if(enemy && enemy->checkEnemyLifeandPos().first ==0){
+
+//        qDebug() << "Level1 if(tower && tower->checkTowerLifeandPos().first ==0)";
         bonusNebulaPixmap = loadResources->getBonusNebula1Pixmap();
-        *bonusNebulaPixmap = bonusNebulaPixmap->scaled(QSize(140,140 ));
+        *bonusNebulaPixmap = bonusNebulaPixmap->scaled(QSize(140,140));
 
-        QPointF origin = tower->checkTowerLifeandPos().second;
-        bonusNebula1 = new ParticleSystem(this, bonusNebulaPixmap, origin, &v_particleSystem);
-        v_particleSystem.push_back(bonusNebula1);
+        QPointF originNebula = enemy->checkEnemyLifeandPos().second;
+//         QPointF origin = tower->pos();
+//        QPointF origin = tower->mapToScene(tower->checkTowerLifeandPos().second);
 
 
-        this->removeItem(tower);
-        delete tower  ;
-        tower = nullptr;
+//        std::cout << termcolor::red << "at destruction: " << originNebula.x() <<  " " << originNebula.y() << termcolor::reset<< "\n";
+        nebulaSystem = new ParticleSystem(this, bonusNebulaPixmap, originNebula);
+        v_particleSystem.push_back(nebulaSystem);
+
+
+        this->removeItem(enemy);
+        delete enemy  ;
+        enemy = nullptr;
 
 
 
         for (int i = 0; i < v_bullets.size(); ++i) {
 
             this->removeItem(v_bullets.at(i));
-            std::cout << "44" << "\n";
+//            std::cout << "44" << "\n";
             //                getBulletContainer()->erase(std::remove(getBulletContainer()->begin(),
             //                                                        getBulletContainer()->end(), getBulletContainer()->at(i)), getBulletContainer()->end());
             //                     getBulletContainer()->at(i)->deleteLater();
@@ -179,6 +188,8 @@ void Level1::advance()
     //    player.passDelta(duration);countFPS();
 
 }
+
+
 
 float Level1::getDelta()
 {
@@ -231,7 +242,7 @@ void Level1::countFPS()
 void Level1::keyPressEvent(QKeyEvent *event)
 {
     if(event->key() == Qt::Key::Key_B){
-        //        createBullet();
+        enemy->setLifeToZero();
     }
 
     if(event->key() == Qt::Key::Key_Up || event->key() == Qt::Key::Key_Down ||
@@ -261,8 +272,8 @@ Level1::~Level1()
 
     m_view->setViewport(nullptr);
 
-    delete tower;
-    tower = nullptr;
+    delete enemy;
+    enemy = nullptr;
 
     delete repeller;
     repeller = nullptr;

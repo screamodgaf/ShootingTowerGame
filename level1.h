@@ -3,7 +3,6 @@
 #include <QObject>
 #include <QGraphicsScene>
 #include <QGraphicsView>
-#include "tower.h"
 #include "enemy.h"
 #include "bullet.h"
 #include <QGraphicsLineItem>
@@ -40,9 +39,10 @@ public slots:
 signals:
 private:
     void createBullet();
+
 private:
     QGraphicsView* m_view = nullptr;
-    Tower* tower = nullptr;
+    Enemy* enemy = nullptr;
     Player* player = nullptr;
     QElapsedTimer* timer = nullptr;
  QProgressBar* b = nullptr;
@@ -58,7 +58,7 @@ private:
 
     float deltatime =0.0;
     QGraphicsPixmapItem* pixmapItem = nullptr;
-    ParticleSystem* bonusNebula1 = nullptr;
+    ParticleSystem* nebulaSystem = nullptr;
     QPixmap* bonusNebulaPixmap = nullptr;
 
     ParticleSystem* particleSystem2 = nullptr;

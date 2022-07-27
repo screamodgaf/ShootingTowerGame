@@ -10,13 +10,13 @@ class Level1;
 class Bullet: public QGraphicsItem
 {
 public:
-    explicit Bullet(Level1 *scene, QGraphicsItem* shooter_, QGraphicsItem *target_, QPointF desiredBulletPos, std::vector<ParticleSystem*>* v_particleSystem, QVector2D vel_);
+    explicit Bullet(Level1* scene, QGraphicsItem *shooter_, std::string typeOfShooter, QGraphicsItem *target_, QPointF desiredBulletPos, QVector2D vel_);
 
     virtual ~Bullet();
     void estimateBulletTrajectory();
     void setRotationTowardTarget();
     void update();
-
+    std::string getTypeOfShooter();
     QRectF boundingRect() const override;
     void advance(int phase) override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
@@ -39,7 +39,7 @@ private:
     QVector2D loc;
     QVector2D vel;
     QVector2D acc;
-    std::vector<ParticleSystem*>* m_v_particleSystem =  nullptr;
+
     float shooterWidth =0.f;
     float shooterHight =0.f;
     float targetWidth =0.f;
@@ -48,6 +48,7 @@ private:
     QGraphicsLineItem line;
     float scalar;
 
+    std::string m_typeOfShooter;
 
 };
 

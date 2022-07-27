@@ -3,9 +3,9 @@
 #include <QDebug>
 #include <QPixmap>
 #include "game.h"
-ParticleSystem::ParticleSystem(Level1 *scene, QPixmap *pixmap, QPointF& origin, std::vector<ParticleSystem *> *v_particleSystem): m_scene{scene}, m_origin{&origin}, m_pixmap{pixmap}, m_v_particleSystem{   v_particleSystem}
+ParticleSystem::ParticleSystem(Level1 *scene, QPixmap *pixmap, QPointF origin): m_scene{scene}, m_origin{ origin}, m_pixmap{pixmap}
 {
-    qDebug() << "m_origin in ParticleSystem: " << m_origin;
+    qDebug() << "m_origin in ParticleSystem: " <<  m_origin;
 }
 
 
@@ -30,7 +30,10 @@ void ParticleSystem::addParticle()
 {
     for (int i = 0; i < 1; ++i) {
 //        if(v_particles.size()>60 ) return;
-        Particle* particle = new Particle(m_pixmap, *m_origin, m_scene);
+//        qDebug() << "m_origin add particle: " << *m_origin;
+
+
+        Particle* particle = new Particle(m_pixmap, m_origin, m_scene);
         m_scene->addItem(particle);
         v_particles.push_back(particle);
 
@@ -58,9 +61,9 @@ void ParticleSystem::applyReppeler(Repeller* repeller)
     }
 }
 
-void ParticleSystem::setPosition(QPointF& pos_)
+void ParticleSystem::setPosition(QPointF pos_)
 {
-    m_origin = &pos_;
+    m_origin =  pos_;
 
 }
 

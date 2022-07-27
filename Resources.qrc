@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/resources">
+        <file>Resources/bonusNebula1.png</file>
+        <file>Resources/fire1.png</file>
+        <file>Resources/ship1.png</file>
+        <file>Resources/sky.png</file>
+        <file>Resources/cardassianshipc.png</file>
+    </qresource>
+</RCC>

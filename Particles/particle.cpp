@@ -9,6 +9,7 @@
 Particle::Particle(QPixmap *pixmap, QPointF &origin, Level1 *scene): m_origin{&origin}, m_pixmap{pixmap}, m_scene{scene}
 {
 
+
     //    rect.setSize(QSizeF(40,40));
 
     //generate random float:
@@ -21,6 +22,10 @@ Particle::Particle(QPixmap *pixmap, QPointF &origin, Level1 *scene): m_origin{&o
     vel = {r, r1 };
     //    acc = {0, 0.02};
     pos = {(float)m_origin->x(), (float)m_origin->y()};
+//    pos = {400,400};
+
+//    pos = {mapToScene((float)m_origin->x(), (float)m_origin->y())};
+
     this->setPos(pos.x(), pos.y());
     //rect.setSize(QSizeF(std::abs(r *60), std::abs(r *60)));
     lifespan = 1;
@@ -36,9 +41,7 @@ Particle::Particle(QPixmap *pixmap, QPointF &origin, Level1 *scene): m_origin{&o
 
     }
 
-
-
-
+//qDebug() << "in particle: " << *m_origin;
 }
 
 
@@ -49,16 +52,18 @@ void Particle::update()
         this->setOpacity(lifespan); ///qreal alpha is specified in the range 0.0-1.0.
 
 
-
     vel += acc;
     pos += vel;
-
+//qDebug() << "in particle: " << pos;
     //limit velocity if its too large
     //    if( abs(vel.x()) > 20){
     //        vel.setX(vel.x()/2);
     //        vel.setY(vel.y()/2);
     //    }
-    this->setPos(pos.x(), pos.y());
+    this->setPos(pos.x() , pos.y() );
+
+//qDebug() << "in particle: " << pos;
+//    qDebug() << "in particle: " << pos;
     acc = {0,0}; ///reseting acceleration to 0
     //    lifespan-=0.005;
     lifespan-=0.015;

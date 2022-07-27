@@ -8,16 +8,15 @@
 #include <QPixmap>
 #include "playerweapons.h"
 #include "playerdefences.h"
-#include "ally.h"
 #include "loadresources.h"
 class Level1;
-class Player: public QGraphicsPixmapItem, public Ally
+class Player: public QGraphicsPixmapItem
 {
 
 public:
     explicit Player(Level1 *scene, std::vector<Bullet*>* v_bullets);
     ~Player();
-
+    PlayerWeapons* getPlayerWeapons();
 protected:
     void advance(int step) override;
     void keyPressEvent(QKeyEvent* event) override;
@@ -37,13 +36,13 @@ protected:
 
 private:
 
-    void addToAcceleration();
+    void spreadAccOverManyFrames();
     void reduceVelX();
     void reduceVelY();
     void rotateAccordingToDirection();
     float normalize_angle( const float value );
 
-    float map2Ranges(float value, float minVel, float maxVel, float minSpeed, float maxSpeed);
+
 private:
     Level1* m_scene = nullptr;
     QImage* playerImage = nullptr;
@@ -54,7 +53,6 @@ private:
     bool is_moving_up    = false;
     bool is_moving_down  = false;
     float d; //delta
-    float frameCounter =0;
     float s =0.f;
     float dumpingSpeed =0.f;
     float prevAngle =0.f;
@@ -97,6 +95,8 @@ private:
     PlayerWeapons* playerWeapons = nullptr;
     friend class Level1;
     friend class PlayerWeapons;
+    friend class Enemy;
+
 signals:
 
 };
